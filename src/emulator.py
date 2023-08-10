@@ -173,5 +173,5 @@ def calculate_accuracy(cfg: ConfigDict, emulator: PlanckEmu) -> np.ndarray:
     emu_pred = np.array(list(map(emulator.prediction, samples)))
     sim_pred = calculate_loglike(samples, cfg)
     fraction = (emu_pred - sim_pred) / sim_pred
-    pickle_save(fraction, "accuracies", f"acc_{cfg.emu.nlhs}")
+    # pickle_save(fraction, "accuracies", f"acc_{cfg.emu.nlhs}")
     return fraction
