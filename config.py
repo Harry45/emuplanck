@@ -46,7 +46,7 @@ def get_config(experiment: str) -> ConfigDict:
 
     # sampling settings
     config.sampling = sampling = ConfigDict()
-    sampling.run_sampler = False
+    sampling.run_sampler = True
     sampling.nstd = 5.0
     sampling.ncov = 2.0
     sampling.use_gp = False
