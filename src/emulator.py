@@ -4,8 +4,6 @@ Date: August 2023
 Author: Arrykrishna
 """
 # pylint: disable=bad-continuation
-from datetime import datetime
-from typing import Any, Tuple
 import torch
 import numpy as np
 import pandas as pd
@@ -15,9 +13,8 @@ from ml_collections.config_dict import ConfigDict
 # our script and functions
 from src.torchemu.gaussianprocess import GaussianProcess
 from src.sampling import generate_priors_uniform, generate_priors_multivariate
-from src.helpers import pickle_load, pickle_save
+from src.helpers import pickle_save
 from src.cambrun import calculate_loglike
-from src.training import get_training_points, train_gp
 
 
 def input_points_multivariate(
@@ -178,50 +175,3 @@ def calculate_accuracy(cfg: ConfigDict, emulator: PlanckEmu) -> np.ndarray:
     fraction = (emu_pred - sim_pred) / sim_pred
     pickle_save(fraction, "accuracies", f"acc_{cfg.emu.nlhs}")
     return fraction
-
-
-def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
-    """
-    Generate the priors and get the emulator. See config file for further details. We can
-    1) generate the training points
-    2) train the GP
-    3) load the emulator
-
-    Args:
-        cfg (ConfigDict): the main configuration file
-
-    Returns:
-        Tuple[Any, GaussianProcess]: the priors (uniform or multivariate) and the emulator
-    """
-    emulator = None
-
-    if cfg.sampling.uniform_prior:
-        priors = generate_priors_uniform(cfg)
-        femu = f"emulator_uniform_{cfg.emu.nlhs}"
-    else:
-        priors = generate_priors_multivariate(cfg)
-        femu = f"emulator_multivariate_{cfg.emu.nlhs}"
-
-    if cfg.emu.generate_points:
-        start_time = datetime.now()
-        _ = get_training_points(cfg)
-        time_elapsed = datetime.now() - start_time
-        print(
-            f"Time taken (hh:mm:ss.ms) to generate {cfg.emu.nlhs} training points : {time_elapsed}"
-        )
-
-    if cfg.emu.train_emu:
-        start_time = datetime.now()
-        emulator = train_gp(cfg)
-        time_elapsed = datetime.now() - start_time
-        print(
-            f"Time taken (hh:mm:ss.ms) to train emulator with {cfg.emu.nlhs} training points : {time_elapsed}"
-        )
-
-    if cfg.sampling.use_gp:
-        emulator = pickle_load("emulators", femu)
-
-    if cfg.emu.calc_acc:
-        _ = calculate_accuracy(cfg, emulator)
-
-    return priors, emulator
