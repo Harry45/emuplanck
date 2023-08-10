@@ -34,6 +34,7 @@ def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
     1) generate the training points
     2) train the GP
     3) load the emulator
+    4) Calculate the accuracy
 
     Args:
         cfg (ConfigDict): the main configuration file
@@ -70,7 +71,12 @@ def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
         emulator = pickle_load("emulators", femu)
 
     if cfg.emu.calc_acc:
+        start_time = datetime.now()
         _ = calculate_accuracy(cfg, emulator)
+        time_elapsed = datetime.now() - start_time
+        print(
+            f"Time taken (hh:mm:ss.ms) to calculate the accuracy for {cfg.emu.ntest} points : {time_elapsed}"
+        )
 
     return priors, emulator
 
@@ -107,7 +113,7 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
         pickle_save(sampler, "samples", fname)
 
 
-def main(args):
+def main(_):
     """
     Run the main sampling code and stores the samples.
     """

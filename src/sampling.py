@@ -6,7 +6,6 @@ Author: Arrykrishna
 # pylint: disable=bad-continuation
 from typing import Any
 import numpy as np
-import emcee
 import scipy.stats as ss
 from ml_collections.config_dict import ConfigDict
 from scipy.stats import multivariate_normal
