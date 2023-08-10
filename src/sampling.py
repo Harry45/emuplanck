@@ -4,8 +4,10 @@ Date: August 2023
 Author: Arrykrishna
 """
 # pylint: disable=bad-continuation
+from datetime import datetime
 from typing import Any
 import numpy as np
+import emcee
 import scipy.stats as ss
 from ml_collections.config_dict import ConfigDict
 from scipy.stats import multivariate_normal
@@ -13,6 +15,8 @@ from scipy.stats import multivariate_normal
 # our scripts
 from src.cambrun import calculate_loglike
 from src.torchemu.gaussianprocess import GaussianProcess
+from src.helpers import pickle_save, get_fname
+from src.emulator import get_priors_emulator
 
 
 def generate_priors_uniform(cfg: ConfigDict) -> dict:
@@ -132,3 +136,35 @@ def emcee_logpost(
     if np.isfinite(logpost):
         return logpost.item()
     return -1e32
+
+
+def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
+    """
+    Sample the posterior distribution.
+
+    Args:
+        cfg (ConfigDict): the main configuration file
+
+    Returns:
+        emcee.ensemble.EnsembleSampler: the EMCEE sampler
+    """
+
+    priors, emulator = get_priors_emulator(cfg)
+
+    if cfg.sampling.run_sampler:
+        pos = cfg.sampling.mean + 1e-4 * np.random.normal(size=(2 * cfg.ndim, cfg.ndim))
+        nwalkers = pos.shape[0]
+
+        sampler = emcee.EnsembleSampler(
+            nwalkers, cfg.ndim, emcee_logpost, args=(cfg, priors, emulator)
+        )
+        start_time = datetime.now()
+        sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
+        time_elapsed = datetime.now() - start_time
+        print(f"Time taken (hh:mm:ss.ms) to sample the posterior is : {time_elapsed}")
+
+        # get the file name of the sampler
+        fname = get_fname(cfg)
+
+        # save the sampler
+        pickle_save(sampler, "samples", fname)

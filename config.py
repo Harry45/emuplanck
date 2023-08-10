@@ -42,7 +42,7 @@ def get_config(experiment: str) -> ConfigDict:
     emu.train_emu = False
     emu.generate_points = False
     emu.calc_acc = True
-    emu.ntest = 10
+    emu.ntest = 1000
 
     # sampling settings
     config.sampling = sampling = ConfigDict()
