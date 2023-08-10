@@ -51,7 +51,7 @@ def get_config(experiment: str) -> ConfigDict:
     sampling.ncov = 2.0
     sampling.use_gp = False
     sampling.uniform_prior = False
-    sampling.nsamples = 10
+    sampling.nsamples = 10000
     sampling.fname = "1"
     sampling.mean = np.array([0.022, 0.122, 1.041, 0.048, 3.03, 0.955])
     sampling.std = np.array([0.097, 1.006, 0.236, 8.321, 17.105, 2.892]) * 1e-3
