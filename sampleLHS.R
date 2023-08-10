@@ -1,6 +1,6 @@
 # setwd('/home/harry/Documents/Oxford/Astrophysics/Projects/MOPED-GP-Expansion/comgp/')
 library(lhs)
-nlhs = seq(1500, 5000, by = 500)
+nlhs = 10 # seq(1500, 5000, by = 500)
 d = 6
 
 for (n in nlhs){
