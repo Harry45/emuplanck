@@ -1,14 +1,16 @@
-# setwd('/home/harry/Documents/Oxford/Astrophysics/Projects/MOPED-GP-Expansion/comgp/')
 library(lhs)
-nlhs = 10 # seq(1500, 5000, by = 500)
-d = 6
+nlhs <- 200
+dimensions <- 6
 
-for (n in nlhs){
-	X = maximinLHS(n, d)
+for (n in nlhs) {
+    lhs_points <- maximinLHS(n, dimensions)
 
-	# filename
-	file = paste('lhs/', 'samples_', as.character(d), '_', as.character(n), '.csv', sep ='')
+    # filename
+    file <- paste("lhs/", "samples_", as.character(d), "_",
+        as.character(n), ".csv",
+        sep = ""
+    )
 
-	# write output
-	write.csv(X, file)
+    # write output
+    write.csv(lhs_points, file)
 }
