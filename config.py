@@ -41,7 +41,7 @@ def get_config(experiment: str) -> ConfigDict:
     emu.niter = 1000
     emu.train_emu = False
     emu.generate_points = False
-    emu.calc_acc = True
+    emu.calc_acc = False
     emu.ntest = 10
 
     # sampling settings
@@ -49,9 +49,9 @@ def get_config(experiment: str) -> ConfigDict:
     sampling.run_sampler = False
     sampling.nstd = 5.0
     sampling.ncov = 2.0
-    sampling.use_gp = True
+    sampling.use_gp = False
     sampling.uniform_prior = False
-    sampling.nsamples = 10000
+    sampling.nsamples = 10
     sampling.fname = "1"
     sampling.mean = np.array([0.022, 0.122, 1.041, 0.048, 3.03, 0.955])
     sampling.std = np.array([0.097, 1.006, 0.236, 8.321, 17.105, 2.892]) * 1e-3
