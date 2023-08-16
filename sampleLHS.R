@@ -1,12 +1,12 @@
 library(lhs)
-nlhs <- 200
+nlhs <- 2000
 dimensions <- 6
 
 for (n in nlhs) {
     lhs_points <- maximinLHS(n, dimensions)
 
     # filename
-    file <- paste("lhs/", "samples_", as.character(d), "_",
+    file <- paste("lhs/", "samples_", as.character(dimensions), "_",
         as.character(n), ".csv",
         sep = ""
     )

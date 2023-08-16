@@ -18,7 +18,7 @@ from src.cambrun import calculate_loglike
 
 
 def input_points_multivariate(
-    cfg: ConfigDict, priors: multivariate_normal, nlhs: int
+    cfg: ConfigDict, priors: multivariate_normal
 ) -> np.ndarray:
     """
     Transform the input LH points such that they follow a multivariate normal distribution.
@@ -26,12 +26,11 @@ def input_points_multivariate(
     Args:
         cfg (ConfigDict): the main configuration file
         priors (multivariate_normal): the multivariate normal prior.
-        nlhs (int): number of LH points to use
 
     Returns:
         np.ndarray: the transformed LH points.
     """
-    lhs_samples = pd.read_csv(f"lhs/samples_{cfg.ndim}_{nlhs}.csv", index_col=0)
+    lhs_samples = pd.read_csv(f"lhs/samples_{cfg.ndim}_{cfg.emu.nlhs}.csv", index_col=0)
     dist = norm(0, 1)
     scaled_samples = []
     for i in range(cfg.ndim):
@@ -43,19 +42,18 @@ def input_points_multivariate(
     return scaled
 
 
-def input_points_uniform(cfg: ConfigDict, priors: dict, nlhs: int) -> np.ndarray:
+def input_points_uniform(cfg: ConfigDict, priors: dict) -> np.ndarray:
     """
     Transform the input LH according to hypercube (uniform in each direction)
 
     Args:
         cfg (ConfigDict): the main configuration file
         priors (dict): a list of uniform priors for the cosmological parameters
-        nlhs (int): the number of LH points to use
 
     Returns:
         np.ndarray: the scaled LH points.
     """
-    lhs_samples = pd.read_csv(f"lhs/samples_{cfg.ndim}_{nlhs}.csv", index_col=0)
+    lhs_samples = pd.read_csv(f"lhs/samples_{cfg.ndim}_{cfg.emu.nlhs}.csv", index_col=0)
     scaled_samples = []
     for i, name in enumerate(cfg.cosmo.names):
         scaled_samples.append(priors[name].ppf(lhs_samples.values[:, i]))

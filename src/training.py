@@ -30,12 +30,12 @@ def get_training_points(cfg: ConfigDict) -> Tuple[np.ndarray, np.ndarray]:
 
     if cfg.sampling.uniform_prior:
         priors = generate_priors_uniform(cfg)
-        cosmologies = input_points_uniform(cfg, priors, cfg.emu.nlhs)
+        cosmologies = input_points_uniform(cfg, priors)
         fcosmo = f"cosmologies_uniform_{cfg.emu.nlhs}"
         flike = f"loglike_uniform_{cfg.emu.nlhs}"
     else:
         priors = generate_priors_multivariate(cfg)
-        cosmologies = input_points_multivariate(cfg, priors, cfg.emu.nlhs)
+        cosmologies = input_points_multivariate(cfg, priors)
         fcosmo = f"cosmologies_multivariate_{cfg.emu.nlhs}"
         flike = f"loglike_multivariate_{cfg.emu.nlhs}"
 
