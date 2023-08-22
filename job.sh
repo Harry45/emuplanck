@@ -1,0 +1,1 @@
+addqueue -m 64 /mnt/zfsusers/phys2286/anaconda3/bin/python main.py --config=config.py:planck-2018 --config.sampling.nsamples=5
