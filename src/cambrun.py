@@ -26,10 +26,11 @@ def generate_cls(parameters: dict) -> dict:
     pars.set_cosmology(
         ombh2=parameters["ombh2"],
         omch2=parameters["omch2"],
-        mnu=0.06,
+        mnu=parameters['mnu'],
         omk=0,
         tau=parameters["tau"],
         thetastar=parameters["thetastar"],
+        neutrino_hierarchy='normal'
     )
     pars.InitPower.set_params(As=parameters["As"], ns=parameters["ns"])
     pars.set_for_lmax(2508, lens_potential_accuracy=0)
@@ -70,6 +71,7 @@ def get_params(parameters: np.ndarray) -> dict:
         "tau": parameters[3],
         "As": np.exp(parameters[4]) * 1e-10,
         "ns": parameters[5],
+        "mnu": parameters[6]
     }
     return params
 
