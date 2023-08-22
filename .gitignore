@@ -1,5 +1,6 @@
 # our folders and files
 .ipynb_checkpoints
+.bashrc
 .vscode
 samples/
 
