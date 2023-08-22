@@ -21,11 +21,11 @@ def get_config(experiment: str) -> ConfigDict:
     config = ConfigDict()
     config.logname = experiment
     config.experiment = experiment
-    config.ndim = 6
 
     # cosmological parameters
     config.cosmo = cosmo = ConfigDict()
     cosmo.names = ["ombh2", "omch2", "thetastar", "tau", "As", "ns", "mnu"]
+    config.ndim = len(cosmo.names)
 
     config.planck = planck = ConfigDict()
     planck.year = 2018
@@ -39,7 +39,7 @@ def get_config(experiment: str) -> ConfigDict:
     emu.lr = 0.01
     emu.nrestart = 5
     emu.niter = 1000
-    emu.train_emu = True
+    emu.train_emu = False
     emu.generate_points = False
     emu.calc_acc = False
     emu.ntest = 1000
@@ -53,8 +53,8 @@ def get_config(experiment: str) -> ConfigDict:
     sampling.uniform_prior = True
     sampling.nsamples = 10000
     sampling.fname = "neutrino_1"
-    sampling.mean = np.array([0.022, 0.122, 1.041, 0.048, 3.03, 0.955, 0.06])
-    sampling.std = 1e-3 * np.array([0.103, 1.046, 0.219, 11.078, 22.327, 3.022, 5.0])
+    sampling.mean = np.array([0.022, 0.122, 1.041, 0.048, 3.03, 0.955, 0.09])
+    sampling.std = 1e-3 * np.array([0.103, 1.046, 0.219, 11.078, 22.327, 3.022, 30.0])
 
     sampling.cov = 1e-8 * np.array(
         [
