@@ -54,7 +54,7 @@ def get_config(experiment: str) -> ConfigDict:
     sampling.nsamples = 10000
     sampling.fname = "testing"
     sampling.mean = np.array([0.022, 0.122, 1.041, 0.048, 3.03, 0.955, 0.09])
-    sampling.std = 1e-3 * np.array([0.103, 1.046, 0.219, 11.078, 22.327, 3.022, 30.0])
+    sampling.std = 1e-3 * np.array([0.103, 1.046, 0.219, 11.078, 22.327, 3.022, 6.0])
 
     sampling.cov = 1e-8 * np.array(
         [
