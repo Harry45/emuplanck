@@ -1,7 +1,9 @@
 # our folders and files
 .ipynb_checkpoints
+.bashrc
 .vscode
 samples/
+jobs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

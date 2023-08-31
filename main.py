@@ -11,6 +11,7 @@ from ml_collections.config_flags import config_flags
 from ml_collections.config_dict import ConfigDict
 import numpy as np
 import emcee
+from multiprocessing import Pool, cpu_count
 
 # our scripts and functions
 from src.helpers import pickle_save, pickle_load, get_fname
@@ -97,12 +98,11 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
     if cfg.sampling.run_sampler:
         pos = cfg.sampling.mean + 1e-4 * np.random.normal(size=(2 * cfg.ndim, cfg.ndim))
         nwalkers = pos.shape[0]
-
-        sampler = emcee.EnsembleSampler(
-            nwalkers, cfg.ndim, emcee_logpost, args=(cfg, priors, emulator)
-        )
         start_time = datetime.now()
-        sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
+        with Pool() as pool:
+            sampler = emcee.EnsembleSampler(nwalkers, cfg.ndim, emcee_logpost,
+                                            args=(cfg, priors, emulator), pool=pool)
+            sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
         time_elapsed = datetime.now() - start_time
         print(f"Time taken (hh:mm:ss.ms) to sample the posterior is : {time_elapsed}")
 
@@ -118,6 +118,8 @@ def main(_):
     Run the main sampling code and stores the samples.
     """
     cfg = FLAGS.config
+    ncpu = cpu_count()
+    print(f"We have {ncpu} CPUs")
 
     # run the sampler
     sample_posterior(cfg)
