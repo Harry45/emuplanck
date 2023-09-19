@@ -53,6 +53,10 @@ def get_config(experiment: str) -> ConfigDict:
     sampling.uniform_prior = True
     sampling.nsamples = 10000
     sampling.fname = "testing"
+
+    sampling.min_uniform = np.array([0.005, 0.001, 0.5, 0.01, 2.7, 0.9, 0.0])
+    sampling.max_uniform = np.array([0.1, 0.99, 10.0, 0.8, 4.0, 1.1, 5.0])
+
     sampling.mean = np.array([0.022, 0.122, 1.041, 0.048, 3.03, 0.955, 0.09])
     sampling.std = 1e-3 * np.array([0.103, 1.046, 0.219, 11.078, 22.327, 3.022, 6.0])
 

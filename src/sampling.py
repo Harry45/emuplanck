@@ -27,10 +27,9 @@ def generate_priors_uniform(cfg: ConfigDict) -> dict:
     """
     priors = {}
     for i, name in enumerate(cfg.cosmo.names):
-        priors[name] = ss.uniform(
-            cfg.sampling.mean[i] - cfg.sampling.nstd * cfg.sampling.std[i],
-            2.0 * cfg.sampling.nstd * cfg.sampling.std[i],
-        )
+        loc = cfg.sampling.min_uniform[i]
+        scale = cfg.sampling.max_uniform[i] - cfg.sampling.min_uniform[i]
+        priors[name] = ss.uniform(loc, scale)
     return priors
 
 
@@ -82,7 +81,10 @@ def emcee_logprior_uniform(parameters: np.ndarray, priors: dict) -> float:
 
 
 def emcee_loglike(
-    parameters: np.ndarray, cfg: ConfigDict, emulator: GaussianProcess = None
+    parameters: np.ndarray,
+    cfg: ConfigDict,
+    priors: Any,
+    emulator: GaussianProcess = None,
 ) -> np.ndarray:
     """
     Calculates the log-likelihood using the emulator or the simulator.
@@ -90,16 +92,24 @@ def emcee_loglike(
     Args:
         parameters (np.ndarray): the input parameters
         cfg (ConfigDict): the main configuration file
+        priors (Any): the priors on the cosmological parameters
         emulator (GaussianProcess): the pre-trained emulator
 
     Returns:
         np.ndarray: the log-likelihood value
     """
-    if cfg.sampling.use_gp:
-        loglike = emulator.prediction(parameters)
+    if cfg.sampling.uniform_prior:
+        logprior = emcee_logprior_uniform(parameters, priors)
     else:
-        loglike = calculate_loglike(parameters, cfg)
-    return loglike
+        logprior = emcee_logprior_multivariate(parameters, priors)
+
+    if np.isfinite(logprior):
+        if cfg.sampling.use_gp:
+            loglike = emulator.prediction(parameters)
+        else:
+            loglike = calculate_loglike(parameters, cfg)
+        return loglike
+    return -1e32
 
 
 def emcee_logpost(
@@ -121,7 +131,7 @@ def emcee_logpost(
         float: the log-posterior value
     """
 
-    loglike = emcee_loglike(parameters, cfg, emulator)
+    loglike = emcee_loglike(parameters, cfg, priors, emulator)
 
     if cfg.sampling.uniform_prior:
         logprior = emcee_logprior_uniform(parameters, priors)
