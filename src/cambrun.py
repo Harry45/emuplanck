@@ -12,26 +12,36 @@ from ml_collections.config_dict import ConfigDict
 from src.plite import PlanckLitePy
 
 
-def generate_cls(parameters: dict) -> dict:
+def generate_cls(parameters: dict, cfg: ConfigDict) -> dict:
     """
     Calculate the CMB power spectra using CAMB.
 
     Args:
         parameters (dict): a dictionary of parameters.
-
+        cfg (ConfigDict): the main configuration file
     Returns:
         dict: a dictionary with the power spectra and the ells.
     """
     pars = camb.CAMBparams()
-    pars.set_cosmology(
-        ombh2=parameters["ombh2"],
-        omch2=parameters["omch2"],
-        mnu=parameters['mnu'],
-        omk=0,
-        tau=parameters["tau"],
-        thetastar=parameters["thetastar"],
-        neutrino_hierarchy='normal'
-    )
+
+    if "mnu" in cfg.cosmo.names:
+        pars.set_cosmology(
+            ombh2=parameters["ombh2"],
+            omch2=parameters["omch2"],
+            mnu=parameters["mnu"],
+            omk=0,
+            tau=parameters["tau"],
+            thetastar=parameters["thetastar"],
+            neutrino_hierarchy="normal",
+        )
+    else:
+        pars.set_cosmology(
+            ombh2=parameters["ombh2"],
+            omch2=parameters["omch2"],
+            omk=0,
+            tau=parameters["tau"],
+            thetastar=parameters["thetastar"],
+        )
     pars.InitPower.set_params(As=parameters["As"], ns=parameters["ns"])
     pars.set_for_lmax(2508, lens_potential_accuracy=0)
     results = camb.get_results(pars)
@@ -54,13 +64,13 @@ def generate_cls(parameters: dict) -> dict:
     return powerspectra
 
 
-def get_params(parameters: np.ndarray) -> dict:
+def get_params(parameters: np.ndarray, cfg: ConfigDict) -> dict:
     """
     Convert an array of parameters to a dictionary of parameters.
 
     Args:
         parameters (np.ndarray): the parameter vector
-
+        cfg (ConfigDict): the main configuration file
     Returns:
         dict: a dictionary of parameters
     """
@@ -71,8 +81,10 @@ def get_params(parameters: np.ndarray) -> dict:
         "tau": parameters[3],
         "As": np.exp(parameters[4]) * 1e-10,
         "ns": parameters[5],
-        "mnu": parameters[6]
     }
+    if "mnu" in cfg.cosmo.names:
+        params["mnu"] = parameters[6]
+
     return params
 
 
@@ -97,8 +109,8 @@ def calculate_loglike(points: np.ndarray, cfg: ConfigDict) -> np.ndarray:
     npoints = points.shape[0]
     record_logl = np.zeros(npoints)
     for i in range(npoints):
-        parameters = get_params(points[i])
-        cls = generate_cls(parameters)
+        parameters = get_params(points[i], cfg)
+        cls = generate_cls(parameters, cfg)
         record_logl[i] = likelihood.loglike(
             cls["tt"], cls["te"], cls["ee"], min(cls["ells"])
         )

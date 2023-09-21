@@ -24,6 +24,7 @@ def get_config(experiment: str) -> ConfigDict:
 
     # cosmological parameters
     config.cosmo = cosmo = ConfigDict()
+    # cosmo.names = ["ombh2", "omch2", "thetastar", "tau", "As", "ns"]
     cosmo.names = ["ombh2", "omch2", "thetastar", "tau", "As", "ns", "mnu"]
     config.ndim = len(cosmo.names)
 
@@ -54,12 +55,18 @@ def get_config(experiment: str) -> ConfigDict:
     sampling.nsamples = 10000
     sampling.fname = "testing"
 
-    sampling.min_uniform = np.array([0.005, 0.001, 0.5, 0.01, 2.7, 0.9, 0.0])
-    # sampling.max_uniform = np.array([0.1, 0.99, 10.0, 0.8, 4.0, 1.1, 5.0])
-    sampling.max_uniform = np.array([0.1, 0.99, 10.0, 0.8, 4.0, 1.1, 0.20])
+    sampling.min_uniform = np.array([0.005, 0.001, 0.5, 0.01, 2.7, 0.9])
+    sampling.max_uniform = np.array([0.1, 0.99, 10.0, 0.8, 4.0, 1.1])
 
-    sampling.mean = np.array([0.022, 0.122, 1.041, 0.048, 3.03, 0.955, 0.09])
-    sampling.std = 1e-3 * np.array([0.103, 1.046, 0.219, 11.078, 22.327, 3.022, 6.0])
+    sampling.mean = np.array([0.022, 0.122, 1.041, 0.048, 3.03, 0.955])
+    sampling.std = 1e-3 * np.array([0.103, 1.046, 0.219, 11.078, 22.327, 3.022])
+
+    if "mnu" in config.cosmo.names:
+        sampling.min_uniform = np.append(sampling.min_uniform, 0.0)
+        sampling.max_uniform = np.append(sampling.max_uniform, 0.20)
+
+        sampling.mean = np.append(sampling.mean, 0.09)
+        sampling.std = np.append(sampling.std, 6.0e-3)
 
     sampling.cov = 1e-8 * np.array(
         [

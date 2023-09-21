@@ -100,8 +100,13 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
         nwalkers = pos.shape[0]
         start_time = datetime.now()
         with Pool() as pool:
-            sampler = emcee.EnsembleSampler(nwalkers, cfg.ndim, emcee_logpost,
-                                            args=(cfg, priors, emulator), pool=pool)
+            sampler = emcee.EnsembleSampler(
+                nwalkers,
+                cfg.ndim,
+                emcee_logpost,
+                args=(cfg, priors, emulator),
+                pool=pool,
+            )
             sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
         time_elapsed = datetime.now() - start_time
         print(f"Time taken (hh:mm:ss.ms) to sample the posterior is : {time_elapsed}")
@@ -111,6 +116,7 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
 
         # save the sampler
         pickle_save(sampler, "samples", fname)
+        print(sampler.flatchain.shape)
 
 
 def main(_):
