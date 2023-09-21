@@ -24,8 +24,8 @@ def get_config(experiment: str) -> ConfigDict:
 
     # cosmological parameters
     config.cosmo = cosmo = ConfigDict()
-    # cosmo.names = ["ombh2", "omch2", "thetastar", "tau", "As", "ns"]
-    cosmo.names = ["ombh2", "omch2", "thetastar", "tau", "As", "ns", "mnu"]
+    cosmo.names = ["ombh2", "omch2", "thetastar", "tau", "As", "ns"]
+    # cosmo.names = ["ombh2", "omch2", "thetastar", "tau", "As", "ns", "mnu"]
     config.ndim = len(cosmo.names)
 
     config.planck = planck = ConfigDict()
