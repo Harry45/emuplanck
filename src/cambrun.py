@@ -47,6 +47,7 @@ def generate_cls(parameters: dict, cfg: ConfigDict) -> dict:
     results = camb.get_results(pars)
     powers = results.get_cmb_power_spectra(pars, CMB_unit="muK")
 
+    # The different CL are always in the order TT, EE, BB, TE
     camb_tt = powers["unlensed_scalar"][:, 0]
     camb_ee = powers["unlensed_scalar"][:, 1]
     camb_te = powers["unlensed_scalar"][:, 3]
