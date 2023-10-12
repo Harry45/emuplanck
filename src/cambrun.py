@@ -43,14 +43,14 @@ def generate_cls(parameters: dict, cfg: ConfigDict) -> dict:
             thetastar=parameters["thetastar"],
         )
     pars.InitPower.set_params(As=parameters["As"], ns=parameters["ns"])
-    pars.set_for_lmax(2508, lens_potential_accuracy=0)
+    pars.set_for_lmax(cfg.planck.ellmax, lens_potential_accuracy=cfg.planck.accuracy)
     results = camb.get_results(pars)
     powers = results.get_cmb_power_spectra(pars, CMB_unit="muK")
 
     # The different CL are always in the order TT, EE, BB, TE
-    camb_tt = powers["unlensed_scalar"][:, 0]
-    camb_ee = powers["unlensed_scalar"][:, 1]
-    camb_te = powers["unlensed_scalar"][:, 3]
+    camb_tt = powers[cfg.planck.spectratype][:, 0]
+    camb_ee = powers[cfg.planck.spectratype][:, 1]
+    camb_te = powers[cfg.planck.spectratype][:, 3]
 
     ells = np.arange(camb_tt.shape[0])
     condition = (ells >= 2) & (ells <= 2508)

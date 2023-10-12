@@ -31,6 +31,9 @@ def get_config(experiment: str) -> ConfigDict:
     config.planck = planck = ConfigDict()
     planck.year = 2018
     planck.spectra = "TTTEEE"
+    planck.spectratype = "total"
+    planck.ellmax = 4000
+    planck.accuracy = 2
     planck.use_low_ell_bins = True
 
     # emulator settings
