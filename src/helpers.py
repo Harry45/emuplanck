@@ -34,6 +34,9 @@ def get_fname(cfg: ConfigDict) -> str:
 
     if not cfg.sampling.use_gp and not cfg.sampling.uniform_prior:
         fname = f"samples_CAMB_multivariate_{cfg.sampling.fname}"
+
+    if "mnu" in cfg.cosmo.names:
+        fname += "_neutrino"
     return fname
 
 
