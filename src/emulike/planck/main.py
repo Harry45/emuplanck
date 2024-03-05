@@ -7,13 +7,11 @@ Author: Arrykrishna
 # pylint: disable=bad-continuation
 from absl import flags, app
 from ml_collections.config_flags import config_flags
-
 from multiprocessing import cpu_count
 
 # our scripts and functions
 from src.emulike.planck.sampling import sample_posterior
 from utils.logger import get_logger
-
 
 FLAGS = flags.FLAGS
 config_flags.DEFINE_config_file("config", None, "Main configuration file.")
