@@ -15,7 +15,7 @@ from ml_collections import ConfigDict
 
 # our script and functions
 import utils.helpers as hp
-from .gaussianprocess import GaussianProcess
+from gaussianprocess import GaussianProcess
 
 plt.rc("text", usetex=True)
 plt.rc("font", **{"family": "sans-serif", "serif": ["Palatino"]})

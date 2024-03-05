@@ -1,32 +1,25 @@
-"""
-Code: Main script for sampling the Planck Lite likelihood.
-Date: August 2023
-Author: Arrykrishna
-"""
-# pylint: disable=bad-continuation
-from typing import Tuple, Any
 from datetime import datetime
-from absl import flags, app
-from ml_collections.config_flags import config_flags
-from ml_collections.config_dict import ConfigDict
+import logging
+from typing import Tuple, Any
 import numpy as np
+from ml_collections.config_dict import ConfigDict
 import emcee
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool
 
-# our scripts and functions
-from src.helpers import pickle_save, pickle_load, get_fname
-from src.emulator import calculate_accuracy
-from src.torchemu.gaussianprocess import GaussianProcess
-from src.training import get_training_points, train_gp
-from src.sampling import (
+# our scripts
+from src.emulike.planck.distribution import (
+    emcee_logpost,
     generate_priors_uniform,
     generate_priors_multivariate,
-    emcee_logpost,
 )
+from utils.helpers import pickle_save, get_fname
+from src.emulike.planck.training import get_training_points, train_gp
+from utils.helpers import pickle_load
+from src.emulike.planck.accuracy import calculate_accuracy
+from torchemu.gaussianprocess import GaussianProcess
+from experiments.planck.plite import PlanckLitePy
 
-
-FLAGS = flags.FLAGS
-config_flags.DEFINE_config_file("config", None, "Main configuration file.")
+LOGGER = logging.getLogger(__name__)
 
 
 def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
@@ -56,17 +49,13 @@ def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
         start_time = datetime.now()
         _ = get_training_points(cfg)
         time_elapsed = datetime.now() - start_time
-        print(
-            f"Time taken (hh:mm:ss.ms) to generate {cfg.emu.nlhs} training points : {time_elapsed}"
-        )
+        LOGGER.info(f"Time: generate {cfg.emu.nlhs} training points : {time_elapsed}")
 
     if cfg.emu.train_emu:
         start_time = datetime.now()
         emulator = train_gp(cfg)
         time_elapsed = datetime.now() - start_time
-        print(
-            f"Time taken (hh:mm:ss.ms) to train emulator with {cfg.emu.nlhs} training points : {time_elapsed}"
-        )
+        LOGGER.info(f"Time: training : {cfg.emu.nlhs} training points : {time_elapsed}")
 
     if cfg.sampling.use_gp:
         emulator = pickle_load("emulators", femu)
@@ -75,9 +64,7 @@ def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
         start_time = datetime.now()
         _ = calculate_accuracy(cfg, emulator)
         time_elapsed = datetime.now() - start_time
-        print(
-            f"Time taken (hh:mm:ss.ms) to calculate the accuracy for {cfg.emu.ntest} points : {time_elapsed}"
-        )
+        LOGGER.info(f"Time: Accuracy for {cfg.emu.ntest} points : {time_elapsed}")
 
     return priors, emulator
 
@@ -94,6 +81,12 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
     """
 
     priors, emulator = get_priors_emulator(cfg)
+    likelihood = PlanckLitePy(
+        data_directory=cfg.path.data,
+        year=cfg.planck.year,
+        spectra=cfg.planck.spectra,
+        use_low_ell_bins=cfg.planck.use_low_ell_bins,
+    )
 
     if cfg.sampling.run_sampler:
         pos = cfg.sampling.mean + 1e-4 * np.random.normal(size=(2 * cfg.ndim, cfg.ndim))
@@ -104,32 +97,16 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
                 nwalkers,
                 cfg.ndim,
                 emcee_logpost,
-                args=(cfg, priors, emulator),
+                args=(likelihood, cfg, priors, emulator),
                 pool=pool,
             )
             sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
         time_elapsed = datetime.now() - start_time
-        print(f"Time taken (hh:mm:ss.ms) to sample the posterior is : {time_elapsed}")
+        LOGGER.info(f"Time: sample the posterior : {time_elapsed}")
 
         # get the file name of the sampler
         fname = get_fname(cfg)
 
         # save the sampler
-        pickle_save(sampler, "samples", fname)
-        print(sampler.flatchain.shape)
-
-
-def main(_):
-    """
-    Run the main sampling code and stores the samples.
-    """
-    cfg = FLAGS.config
-    ncpu = cpu_count()
-    print(f"We have {ncpu} CPUs")
-
-    # run the sampler
-    sample_posterior(cfg)
-
-
-if __name__ == "__main__":
-    app.run(main)
+        pickle_save(sampler, cfg.path.samples, fname)
+        LOGGER.info(f"Total number of samples: {sampler.flatchain.shape}")

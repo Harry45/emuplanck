@@ -2,7 +2,7 @@
 .ipynb_checkpoints
 .bashrc
 .vscode
-samples/
+src/emulike/planck/samples/
 jobs/
 
 # Byte-compiled / optimized / DLL files

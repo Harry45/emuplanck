@@ -12,9 +12,15 @@ available at: https://github.com/xzackli/actpols2_like_py
 
 planck calibration is set to 1 by default but this can easily be modified
 """
+
+import logging
 import numpy as np
 from scipy.io import FortranFile
 import scipy.linalg
+
+__all__ = "PlanckLitePy"
+
+LOGGER = logging.getLogger(__name__)
 
 
 def main():
@@ -31,6 +37,44 @@ def main():
 
     TT2018_lowTTbins = PlanckLitePy(year=2018, spectra="TT", use_low_ell_bins=True)
     TT2018_lowTTbins.test()
+
+
+def slicing(
+    vector: np.ndarray,
+    nbintt: int,
+    nbinte: int,
+    nbinee: int,
+    use_tt: bool,
+    use_te: bool,
+    use_ee: bool,
+) -> np.ndarray:
+    nbin_tot = nbintt + nbinte + nbinee
+    # choose relevant bits based on whether using TT, TE, EE
+    if use_tt and not (use_ee) and not (use_te):
+        # just tt
+        bin_no = nbintt
+        start = 0
+        end = start + bin_no
+        vector_new = vector[start:end]
+    elif not (use_tt) and not (use_ee) and use_te:
+        # just te
+        bin_no = nbinte
+        start = nbintt
+        end = start + bin_no
+        vector_new = vector[start:end]
+    elif not (use_tt) and use_ee and not (use_te):
+        # just ee
+        bin_no = nbinee
+        start = nbintt + nbinte
+        end = start + bin_no
+        vector_new = vector[start:end]
+    elif use_tt and use_ee and use_te:
+        # use all
+        bin_no = nbin_tot
+        vector_new = vector
+    else:
+        print("not implemented")
+    return vector_new
 
 
 class PlanckLitePy:
@@ -139,6 +183,16 @@ class PlanckLitePy:
             self.bin_w_TT = self.bin_w
 
         self.fisher = self.get_inverse_covmat()
+        self.X_data = slicing(
+            self.X_data,
+            self.nbintt,
+            self.nbinte,
+            self.nbinee,
+            self.use_tt,
+            self.use_te,
+            self.use_ee,
+        )
+        LOGGER.info(f"Shape of data is {self.X_data.shape}")
 
     def get_inverse_covmat(self):
         # read full covmat
@@ -189,7 +243,7 @@ class PlanckLitePy:
 
         return fisher
 
-    def loglike(self, Dltt, Dlte, Dlee, ellmin=2):
+    def theory(self, Dltt, Dlte, Dlee, ellmin=2):
         # convert model Dl's to Cls then bin them
         ls = np.arange(len(Dltt)) + ellmin
         fac = ls * (ls + 1) / (2 * np.pi)
@@ -246,39 +300,23 @@ class PlanckLitePy:
 
         X_model = np.zeros(self.nbin_tot)
         X_model[: self.nbintt] = Cltt_bin / self.calPlanck**2
-        X_model[self.nbintt : self.nbintt + self.nbinte] = (
-            Clte_bin / self.calPlanck**2
-        )
+        X_model[self.nbintt : self.nbintt + self.nbinte] = Clte_bin / self.calPlanck**2
         X_model[self.nbintt + self.nbinte :] = Clee_bin / self.calPlanck**2
 
-        Y = self.X_data - X_model
+        theory_vector = slicing(
+            X_model,
+            self.nbintt,
+            self.nbinte,
+            self.nbinee,
+            self.use_tt,
+            self.use_te,
+            self.use_ee,
+        )
+        return theory_vector
 
-        # choose relevant bits based on whether using TT, TE, EE
-        if self.use_tt and not (self.use_ee) and not (self.use_te):
-            # just tt
-            bin_no = self.nbintt
-            start = 0
-            end = start + bin_no
-            diff_vec = Y[start:end]
-        elif not (self.use_tt) and not (self.use_ee) and self.use_te:
-            # just te
-            bin_no = self.nbinte
-            start = self.nbintt
-            end = start + bin_no
-            diff_vec = Y[start:end]
-        elif not (self.use_tt) and self.use_ee and not (self.use_te):
-            # just ee
-            bin_no = self.nbinee
-            start = self.nbintt + self.nbinte
-            end = start + bin_no
-            diff_vec = Y[start:end]
-        elif self.use_tt and self.use_ee and self.use_te:
-            # use all
-            bin_no = self.nbin_tot
-            diff_vec = Y
-        else:
-            print("not implemented")
-
+    def loglike(self, Dltt, Dlte, Dlee, ellmin=2):
+        X_model = self.theory(Dltt, Dlte, Dlee, ellmin)
+        diff_vec = self.X_data - X_model
         return -0.5 * diff_vec.dot(self.fisher.dot(diff_vec))
 
     def test(self):

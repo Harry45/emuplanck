@@ -4,6 +4,7 @@ Date: August 2023
 Author: Arrykrishna
 """
 
+import os
 import numpy as np
 from ml_collections.config_dict import ConfigDict
 
@@ -22,6 +23,13 @@ def get_config(experiment: str) -> ConfigDict:
     config.logname = experiment
     config.experiment = experiment
 
+    # paths
+    config.path = path = ConfigDict()
+    path.parent = "/home/arrykrishna/Documents/Oxford/Projects/emuplanck/"
+    path.data = os.path.join(path.parent, "experiments/planck/data")
+    path.logs = os.path.join(path.parent, "src/emulike/planck/logs/")
+    path.samples = os.path.join(path.parent, "src/emulike/planck/samples/")
+
     # cosmological parameters
     config.cosmo = cosmo = ConfigDict()
     cosmo.names = ["ombh2", "omch2", "thetastar", "tau", "As", "ns"]
@@ -32,8 +40,8 @@ def get_config(experiment: str) -> ConfigDict:
     planck.year = 2018
     planck.spectra = "TTTEEE"
     planck.spectratype = "total"
-    planck.ellmax = 4000
-    planck.accuracy = 2
+    planck.ellmax = 2510  # 4000
+    planck.accuracy = 1  # 2
     planck.use_low_ell_bins = True
 
     # emulator settings
@@ -55,7 +63,7 @@ def get_config(experiment: str) -> ConfigDict:
     sampling.ncov = 2.0
     sampling.use_gp = False
     sampling.uniform_prior = True
-    sampling.nsamples = 10000
+    sampling.nsamples = 10
     sampling.fname = "testing"
 
     sampling.min_uniform = np.array([0.005, 0.001, 0.5, 0.01, 2.7, 0.9])

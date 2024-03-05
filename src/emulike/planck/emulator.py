@@ -3,34 +3,37 @@ Code: Emulator for Planck Lite likelihood code.
 Date: August 2023
 Author: Arrykrishna
 """
+
 # pylint: disable=bad-continuation
+import os
 import torch
+import logging
 import numpy as np
 import pandas as pd
-from scipy.stats import norm, multivariate_normal
+from scipy.stats import norm
 from ml_collections.config_dict import ConfigDict
+from typing import Any
 
 # our script and functions
-from src.torchemu.gaussianprocess import GaussianProcess
-from src.sampling import generate_priors_uniform, generate_priors_multivariate
-from src.helpers import pickle_save
-from src.cambrun import calculate_loglike
+from torchemu.gaussianprocess import GaussianProcess
 
 
-def input_points_multivariate(
-    cfg: ConfigDict, priors: multivariate_normal
-) -> np.ndarray:
+LOGGER = logging.getLogger(__name__)
+
+
+def input_points_multivariate(cfg: ConfigDict, priors: Any) -> np.ndarray:
     """
     Transform the input LH points such that they follow a multivariate normal distribution.
 
     Args:
         cfg (ConfigDict): the main configuration file
-        priors (multivariate_normal): the multivariate normal prior.
+        priors (Any): the multivariate normal prior.
 
     Returns:
         np.ndarray: the transformed LH points.
     """
-    lhs_samples = pd.read_csv(f"lhs/samples_{cfg.ndim}_{cfg.emu.nlhs}.csv", index_col=0)
+    fname = os.path.join(cfg.path.parent, f"lhs/samples_{cfg.ndim}_{cfg.emu.nlhs}.csv")
+    lhs_samples = pd.read_csv(fname, index_col=0)
     dist = norm(0, 1)
     scaled_samples = []
     for i in range(cfg.ndim):
@@ -53,7 +56,8 @@ def input_points_uniform(cfg: ConfigDict, priors: dict) -> np.ndarray:
     Returns:
         np.ndarray: the scaled LH points.
     """
-    lhs_samples = pd.read_csv(f"lhs/samples_{cfg.ndim}_{cfg.emu.nlhs}.csv", index_col=0)
+    fname = os.path.join(cfg.path.parent, f"lhs/samples_{cfg.ndim}_{cfg.emu.nlhs}.csv")
+    lhs_samples = pd.read_csv(fname, index_col=0)
     scaled_samples = []
     for i, name in enumerate(cfg.cosmo.names):
         scaled_samples.append(priors[name].ppf(lhs_samples.values[:, i]))
@@ -145,31 +149,3 @@ class PlanckEmu:
         pred_gp = self.gp_module.prediction(param_tensor)
         pred = inverse_tranform(pred_gp.item())
         return pred
-
-
-def calculate_accuracy(cfg: ConfigDict, emulator: PlanckEmu) -> np.ndarray:
-    """
-    Calculate the accuracy given the predictions from the simulator and the emulator
-
-    Args:
-        cfg (ConfigDict): the main configuration file
-        emulator (PlanckEmu): the emulator
-
-    Returns:
-        np.ndarray: the accuracy measure
-    """
-    if cfg.sampling.uniform_prior:
-        priors = generate_priors_uniform(cfg)
-        samples = np.column_stack(
-            [priors[name].rvs(cfg.emu.ntest) for name in cfg.cosmo.names]
-        )
-    else:
-        priors = generate_priors_multivariate(cfg)
-        samples = priors.rvs(cfg.emu.ntest)
-
-    print("Calculating accuracy")
-    emu_pred = np.array(list(map(emulator.prediction, samples)))
-    sim_pred = calculate_loglike(samples, cfg)
-    fraction = (emu_pred - sim_pred) / sim_pred
-    pickle_save(fraction, "accuracies", f"acc_{cfg.emu.nlhs}")
-    return fraction

@@ -12,8 +12,8 @@ import torch.autograd
 import numpy as np
 from ml_collections import ConfigDict
 
-import src.torchemu.kernel as kn
-import src.torchemu.transformation as tr
+import torchemu.kernel as kn
+import torchemu.transformation as tr
 
 
 class GaussianProcess(tr.PreWhiten):

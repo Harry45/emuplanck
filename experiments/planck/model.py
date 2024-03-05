@@ -9,7 +9,7 @@ import camb
 from ml_collections.config_dict import ConfigDict
 
 # Prince's code
-from src.plite import PlanckLitePy
+from experiments.planck.plite import PlanckLitePy
 
 
 def generate_cls(parameters: dict, cfg: ConfigDict) -> dict:
@@ -89,7 +89,9 @@ def get_params(parameters: np.ndarray, cfg: ConfigDict) -> dict:
     return params
 
 
-def calculate_loglike(points: np.ndarray, cfg: ConfigDict) -> np.ndarray:
+def calculate_loglike(
+    likelihood: PlanckLitePy, points: np.ndarray, cfg: ConfigDict
+) -> np.ndarray:
     """
     Calculate the log-likelihood given a set of points.
 
@@ -100,12 +102,6 @@ def calculate_loglike(points: np.ndarray, cfg: ConfigDict) -> np.ndarray:
     Returns:
         np.ndarray: the log-likelihood values.
     """
-    likelihood = PlanckLitePy(
-        data_directory="data",
-        year=cfg.planck.year,
-        spectra=cfg.planck.spectra,
-        use_low_ell_bins=cfg.planck.use_low_ell_bins,
-    )
     points = np.atleast_2d(points)
     npoints = points.shape[0]
     record_logl = np.zeros(npoints)

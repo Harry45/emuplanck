@@ -3,6 +3,7 @@ Code: Some helper functions.
 Date: August 2023
 Author: Arrykrishna
 """
+
 import os
 import pickle
 from typing import Any
@@ -54,7 +55,7 @@ def pickle_save(file: list, folder: str, fname: str) -> None:
     # use compressed format to store data
     path = os.path.join(folder, fname)
     with open(path + ".pkl", "wb") as dummy:
-        pickle.dump(file, dummy)
+        pickle.dump(file, dummy, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def pickle_load(folder: str, fname: str) -> Any:

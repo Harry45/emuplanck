@@ -5,15 +5,25 @@ Author: Arrykrishna
 """
 
 import os
+import logging
 from typing import Tuple
 import numpy as np
 from ml_collections.config_dict import ConfigDict
 
 # our scripts and functions
-from src.cambrun import calculate_loglike
-from src.helpers import pickle_save, pickle_load
-from src.sampling import generate_priors_uniform, generate_priors_multivariate
-from src.emulator import PlanckEmu, input_points_uniform, input_points_multivariate
+from experiments.planck.model import calculate_loglike
+from utils.helpers import pickle_save, pickle_load
+from src.emulike.planck.distribution import (
+    generate_priors_uniform,
+    generate_priors_multivariate,
+)
+from src.emulike.planck.emulator import (
+    PlanckEmu,
+    input_points_uniform,
+    input_points_multivariate,
+)
+
+LOGGER = logging.getLogger(__name__)
 
 
 def get_training_points(cfg: ConfigDict) -> Tuple[np.ndarray, np.ndarray]:
@@ -39,11 +49,11 @@ def get_training_points(cfg: ConfigDict) -> Tuple[np.ndarray, np.ndarray]:
         fcosmo = f"cosmologies_multivariate_{cfg.emu.nlhs}"
         flike = f"loglike_multivariate_{cfg.emu.nlhs}"
 
-    print(f"Generating {cfg.emu.nlhs} training points")
+    LOGGER.info(f"Generating {cfg.emu.nlhs} training points")
     loglikelihoods = calculate_loglike(cosmologies, cfg)
 
-    pickle_save(cosmologies, "training", fcosmo)
-    pickle_save(loglikelihoods, "training", flike)
+    pickle_save(cosmologies, "trainingpoints", fcosmo)
+    pickle_save(loglikelihoods, "trainingpoints", flike)
     return cosmologies, loglikelihoods
 
 
@@ -68,8 +78,8 @@ def train_gp(cfg: ConfigDict) -> PlanckEmu:
         flike = f"loglike_multivariate_{cfg.emu.nlhs}"
         femu = f"emulator_multivariate_{cfg.emu.nlhs}"
 
-    cosmologies = pickle_load("training", fcosmo)
-    loglikelihoods = pickle_load("training", flike)
+    cosmologies = pickle_load("trainingpoints", fcosmo)
+    loglikelihoods = pickle_load("trainingpoints", flike)
 
     emulator = PlanckEmu(cfg, cosmologies, loglikelihoods)
     _ = emulator.train_gp(prewhiten=True)

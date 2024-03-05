@@ -6,5 +6,5 @@ We build an emulator for the Planck likelihood. This is based on the work done b
 To run the code, we can do the following:
 
 ```
-python main.py --config=config.py:planck-2018 --config.sampling.nsamples=10 --config.sampling.fname=test_1 --config.sampling.uniform_prior=True
+python3 -m src.emulike.planck.main --config=src/emulike/planck/config.py:planck-2018 --config.sampling.nsamples=1 --config.sampling.fname=test_1 --config.sampling.uniform_prior=True
 ```
