@@ -1,5 +1,4 @@
 #!/bin/bash
-module load cuda/12.3
 source /mnt/zfsusers/phys2286/anaconda3/etc/profile.d/conda.sh
 source activate jaxcosmo
 echo $PWD
