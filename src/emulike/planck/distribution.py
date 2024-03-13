@@ -6,7 +6,6 @@ Author: Arrykrishna
 
 # pylint: disable=bad-continuation
 from typing import Any
-from typing import Any
 import numpy as np
 import logging
 import scipy.stats as ss
@@ -15,14 +14,14 @@ from scipy.stats import multivariate_normal
 
 
 # our scripts
-from experiments.planck.model import calculate_loglike
+from experiments.planck.model import planck_loglike
 from torchemu.gaussianprocess import GaussianProcess
 from experiments.planck.plite import PlanckLitePy
 
 LOGGER = logging.getLogger(__name__)
 
 
-def generate_priors_uniform(cfg: ConfigDict) -> dict:
+def planck_priors_uniform(cfg: ConfigDict) -> dict:
     """
     Generate uniform priors on the cosmological parameters.
 
@@ -40,7 +39,7 @@ def generate_priors_uniform(cfg: ConfigDict) -> dict:
     return priors
 
 
-def generate_priors_multivariate(cfg: ConfigDict) -> Any:
+def planck_priors_multivariate(cfg: ConfigDict) -> Any:
     """
     Generates a multivariate normal distribution  of the parameters with a mean and covariance, C
 
@@ -53,7 +52,7 @@ def generate_priors_multivariate(cfg: ConfigDict) -> Any:
     return multivariate_normal(cfg.sampling.mean, cfg.sampling.ncov * cfg.sampling.cov)
 
 
-def emcee_logprior_multivariate(parameters: np.ndarray, priors: Any) -> float:
+def planck_logprior_multivariate(parameters: np.ndarray, priors: Any) -> float:
     """
     Calculates the log-pdf using a multivariate normal prior.
 
@@ -68,7 +67,7 @@ def emcee_logprior_multivariate(parameters: np.ndarray, priors: Any) -> float:
     return logp
 
 
-def emcee_logprior_uniform(parameters: np.ndarray, priors: dict) -> float:
+def planck_logprior_uniform(parameters: np.ndarray, priors: dict) -> float:
     """
     Calculates the log-prior, where all parameters follow a uniform distribution.
 
@@ -85,7 +84,7 @@ def emcee_logprior_uniform(parameters: np.ndarray, priors: dict) -> float:
     return logp
 
 
-def emcee_loglike(
+def planck_loglike_sampler(
     parameters: np.ndarray,
     likelihood: PlanckLitePy,
     cfg: ConfigDict,
@@ -105,20 +104,20 @@ def emcee_loglike(
         np.ndarray: the log-likelihood value
     """
     if cfg.sampling.uniform_prior:
-        logprior = emcee_logprior_uniform(parameters, priors)
+        logprior = planck_logprior_uniform(parameters, priors)
     else:
-        logprior = emcee_logprior_multivariate(parameters, priors)
+        logprior = planck_logprior_multivariate(parameters, priors)
 
     if np.isfinite(logprior):
         if cfg.sampling.use_gp:
             loglike = emulator.prediction(parameters)
         else:
-            loglike = calculate_loglike(likelihood, parameters, cfg)
+            loglike = planck_loglike(likelihood, parameters, cfg)
         return loglike
     return -1e32
 
 
-def emcee_logpost(
+def planck_logpost_sampler(
     parameters: np.ndarray,
     likelihood: PlanckLitePy,
     cfg: ConfigDict,
@@ -138,12 +137,12 @@ def emcee_logpost(
         float: the log-posterior value
     """
 
-    loglike = emcee_loglike(parameters, likelihood, cfg, priors, emulator)
+    loglike = planck_loglike_sampler(parameters, likelihood, cfg, priors, emulator)
 
     if cfg.sampling.uniform_prior:
-        logprior = emcee_logprior_uniform(parameters, priors)
+        logprior = planck_logprior_uniform(parameters, priors)
     else:
-        logprior = emcee_logprior_multivariate(parameters, priors)
+        logprior = planck_logprior_multivariate(parameters, priors)
 
     logpost = loglike + logprior
     if np.isfinite(logpost):

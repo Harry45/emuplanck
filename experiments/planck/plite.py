@@ -13,6 +13,7 @@ available at: https://github.com/xzackli/actpols2_like_py
 planck calibration is set to 1 by default but this can easily be modified
 """
 
+import os
 import logging
 import numpy as np
 from scipy.io import FortranFile
@@ -20,6 +21,7 @@ import scipy.linalg
 
 __all__ = "PlanckLitePy"
 
+PATH = os.path.dirname(os.path.realpath(__file__))
 LOGGER = logging.getLogger(__name__)
 
 
@@ -90,6 +92,7 @@ class PlanckLitePy:
         use_low_ell_bins = True to use 2 low ell bins for the TT 2<=ell<30 data
           or False to only use ell>=30
         """
+        data_directory = os.path.join(PATH, data_directory)
         self.year = year
         self.spectra = spectra
         self.use_low_ell_bins = use_low_ell_bins  # False matches Plik_lite - just l>=30

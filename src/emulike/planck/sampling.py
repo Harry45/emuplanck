@@ -8,14 +8,14 @@ from multiprocessing import Pool
 
 # our scripts
 from src.emulike.planck.distribution import (
-    emcee_logpost,
-    generate_priors_uniform,
-    generate_priors_multivariate,
+    planck_logpost_sampler,
+    planck_priors_uniform,
+    planck_priors_multivariate,
 )
-from utils.helpers import pickle_save, get_fname
+from utils.helpers import pickle_save, get_planck_fname
 from src.emulike.planck.training import get_training_points, train_gp
 from utils.helpers import pickle_load
-from src.emulike.planck.accuracy import calculate_accuracy
+from src.emulike.planck.accuracy import calculate_planck_accuracy
 from torchemu.gaussianprocess import GaussianProcess
 from experiments.planck.plite import PlanckLitePy
 
@@ -39,10 +39,10 @@ def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
     emulator = None
 
     if cfg.sampling.uniform_prior:
-        priors = generate_priors_uniform(cfg)
+        priors = planck_priors_uniform(cfg)
         femu = f"emulator_uniform_{cfg.emu.nlhs}"
     else:
-        priors = generate_priors_multivariate(cfg)
+        priors = planck_priors_multivariate(cfg)
         femu = f"emulator_multivariate_{cfg.emu.nlhs}"
 
     if cfg.emu.generate_points:
@@ -62,7 +62,7 @@ def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
 
     if cfg.emu.calc_acc:
         start_time = datetime.now()
-        _ = calculate_accuracy(cfg, emulator)
+        _ = calculate_planck_accuracy(cfg, emulator)
         time_elapsed = datetime.now() - start_time
         LOGGER.info(f"Time: Accuracy for {cfg.emu.ntest} points : {time_elapsed}")
 
@@ -96,7 +96,7 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
             sampler = emcee.EnsembleSampler(
                 nwalkers,
                 cfg.ndim,
-                emcee_logpost,
+                planck_logpost_sampler,
                 args=(likelihood, cfg, priors, emulator),
                 pool=pool,
             )
@@ -105,7 +105,7 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
         LOGGER.info(f"Time: sample the posterior : {time_elapsed}")
 
         # get the file name of the sampler
-        fname = get_fname(cfg)
+        fname = get_planck_fname(cfg)
 
         # save the sampler
         pickle_save(sampler, cfg.path.samples, fname)

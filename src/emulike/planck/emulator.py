@@ -5,64 +5,16 @@ Author: Arrykrishna
 """
 
 # pylint: disable=bad-continuation
-import os
 import torch
 import logging
 import numpy as np
-import pandas as pd
-from scipy.stats import norm
 from ml_collections.config_dict import ConfigDict
-from typing import Any
 
 # our script and functions
 from torchemu.gaussianprocess import GaussianProcess
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-def input_points_multivariate(cfg: ConfigDict, priors: Any) -> np.ndarray:
-    """
-    Transform the input LH points such that they follow a multivariate normal distribution.
-
-    Args:
-        cfg (ConfigDict): the main configuration file
-        priors (Any): the multivariate normal prior.
-
-    Returns:
-        np.ndarray: the transformed LH points.
-    """
-    fname = os.path.join(cfg.path.parent, f"lhs/samples_{cfg.ndim}_{cfg.emu.nlhs}.csv")
-    lhs_samples = pd.read_csv(fname, index_col=0)
-    dist = norm(0, 1)
-    scaled_samples = []
-    for i in range(cfg.ndim):
-        scaled_samples.append(dist.ppf(lhs_samples.values[:, i]))
-    scaled_samples = np.column_stack(scaled_samples)
-    cholesky = np.linalg.cholesky(priors.cov)
-    scaled = cfg.sampling.mean.reshape(cfg.ndim, 1) + cholesky @ scaled_samples.T
-    scaled = scaled.T
-    return scaled
-
-
-def input_points_uniform(cfg: ConfigDict, priors: dict) -> np.ndarray:
-    """
-    Transform the input LH according to hypercube (uniform in each direction)
-
-    Args:
-        cfg (ConfigDict): the main configuration file
-        priors (dict): a list of uniform priors for the cosmological parameters
-
-    Returns:
-        np.ndarray: the scaled LH points.
-    """
-    fname = os.path.join(cfg.path.parent, f"lhs/samples_{cfg.ndim}_{cfg.emu.nlhs}.csv")
-    lhs_samples = pd.read_csv(fname, index_col=0)
-    scaled_samples = []
-    for i, name in enumerate(cfg.cosmo.names):
-        scaled_samples.append(priors[name].ppf(lhs_samples.values[:, i]))
-    scaled_samples = np.column_stack(scaled_samples)
-    return scaled_samples
 
 
 def forward_transform(loglikelihood: np.ndarray) -> np.ndarray:

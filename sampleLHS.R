@@ -1,16 +1,26 @@
 library(lhs)
-nlhs <- 2000
-dimensions <- 6
+# nlhs <- 500
+# dimensions <- 3
 
-for (n in nlhs) {
-    lhs_points <- maximinLHS(n, dimensions)
+args <- commandArgs(trailingOnly = TRUE)
 
-    # filename
-    file <- paste("lhs/", "samples_", as.character(dimensions), "_",
-        as.character(n), ".csv",
-        sep = ""
-    )
+cat('Number of LHS points is:', args[1], "\n")
+cat('Number of dimensions is:', args[2], "\n")
 
-    # write output
-    write.csv(lhs_points, file)
+if (args[1] < args[2]) {
+  stop("First argument should be number of LHS")
 }
+
+n = args[1]
+dimensions = args[2]
+
+lhs_points <- maximinLHS(n, dimensions)
+
+# filename
+file <- paste("lhs/", "samples_", as.character(dimensions), "_",
+    as.character(n), ".csv",
+    sep = ""
+)
+
+# write output
+write.csv(lhs_points, file)

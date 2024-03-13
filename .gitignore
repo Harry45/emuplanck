@@ -4,6 +4,7 @@
 .vscode
 src/emulike/planck/samples/
 jobs/
+experiments/jla/data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

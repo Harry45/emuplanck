@@ -10,7 +10,26 @@ from typing import Any
 from ml_collections.config_dict import ConfigDict
 
 
-def get_fname(cfg: ConfigDict) -> str:
+def get_jla_fname(cfg: ConfigDict) -> str:
+    """Get the file name of the sampler for JLA:
+    1) uniform prior
+    2) emulator for likelihood
+
+    Args:
+        cfg (ConfigDict): the main configuration file
+
+    Returns:
+        str: the file name of the sampler
+    """
+    model = "lcdm" if cfg.lambdacdm else "wcdm"
+    if cfg.sampling.use_gp:
+        fname = f"samples_{model}_GP_{cfg.emu.nlhs}_{cfg.sampling.fname}"
+    else:
+        fname = f"samples_{model}_Analytic_{cfg.sampling.fname}"
+    return fname
+
+
+def get_planck_fname(cfg: ConfigDict) -> str:
     """
     Get the file name of the sampler, depending on whether we are using:
     1) uniform prior

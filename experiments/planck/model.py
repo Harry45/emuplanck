@@ -12,7 +12,7 @@ from ml_collections.config_dict import ConfigDict
 from experiments.planck.plite import PlanckLitePy
 
 
-def generate_cls(parameters: dict, cfg: ConfigDict) -> dict:
+def planck_theory(parameters: dict, cfg: ConfigDict) -> dict:
     """
     Calculate the CMB power spectra using CAMB.
 
@@ -65,7 +65,7 @@ def generate_cls(parameters: dict, cfg: ConfigDict) -> dict:
     return powerspectra
 
 
-def get_params(parameters: np.ndarray, cfg: ConfigDict) -> dict:
+def planck_get_params(parameters: np.ndarray, cfg: ConfigDict) -> dict:
     """
     Convert an array of parameters to a dictionary of parameters.
 
@@ -89,7 +89,7 @@ def get_params(parameters: np.ndarray, cfg: ConfigDict) -> dict:
     return params
 
 
-def calculate_loglike(
+def planck_loglike(
     likelihood: PlanckLitePy, points: np.ndarray, cfg: ConfigDict
 ) -> np.ndarray:
     """
@@ -106,8 +106,8 @@ def calculate_loglike(
     npoints = points.shape[0]
     record_logl = np.zeros(npoints)
     for i in range(npoints):
-        parameters = get_params(points[i], cfg)
-        cls = generate_cls(parameters, cfg)
+        parameters = planck_get_params(points[i], cfg)
+        cls = planck_theory(parameters, cfg)
         record_logl[i] = likelihood.loglike(
             cls["tt"], cls["te"], cls["ee"], min(cls["ells"])
         )
