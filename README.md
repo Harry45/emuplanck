@@ -3,7 +3,7 @@
 We build an emulator for the Planck likelihood. This is based on the work done by Prince et al ([paper](), [code](https://github.com/heatherprince/planck-lite-py)).
 
 
-To run the code, we can do the following:
+All boolean field are already set in the config file and to run the code, we can do the following:
 
 ### Planck
 
