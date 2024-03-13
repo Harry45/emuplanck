@@ -3,8 +3,9 @@
 .bashrc
 .vscode
 src/emulike/planck/samples/
-jobs/
+src/emulike/jla/samples/
 experiments/jla/data/
+jobs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
