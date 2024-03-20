@@ -47,5 +47,6 @@ def calculate_jla_accuracy(cfg: ConfigDict, emulator: JLAemu) -> np.ndarray:
     # ignore the bad points in the loglikelihood predictions
     newfraction = fraction[fraction < 100.0]
     pickle_save(newfraction, path_acc, f"acc_{model}_{cfg.emu.nlhs}")
-    LOGGER.info(f"Emulator accuracy: {np.mean(newfraction)*100:.2f} %")
+    LOGGER.info(f"Emulator accuracy (MEAN) : {np.mean(newfraction)*100:.2f} %")
+    LOGGER.info(f"Emulator accuracy (STD)  : {np.std(newfraction)*100:.2f} %")
     return fraction

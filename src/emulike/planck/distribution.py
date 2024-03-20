@@ -21,9 +21,9 @@ from experiments.planck.plite import PlanckLitePy
 LOGGER = logging.getLogger(__name__)
 
 
-def planck_priors_uniform(cfg: ConfigDict) -> dict:
+def planck_priors_normal(cfg: ConfigDict) -> dict:
     """
-    Generate uniform priors on the cosmological parameters.
+    Generate normal priors on the cosmological parameters.
 
     Args:
         cfg (ConfigDict): the main configuration file.
@@ -32,42 +32,14 @@ def planck_priors_uniform(cfg: ConfigDict) -> dict:
         dict: a dictionary of the priors of the parameters.
     """
     priors = {}
-    for i, name in enumerate(cfg.cosmo.names):
-        loc = cfg.sampling.min_uniform[i]
-        scale = cfg.sampling.max_uniform[i] - cfg.sampling.min_uniform[i]
-        priors[name] = ss.uniform(loc, scale)
+    for i, name in enumerate(cfg.sampling.names):
+        loc = cfg.sampling.mean[i]
+        scale = cfg.sampling.std[i]
+        priors[name] = ss.norm(loc, scale)
     return priors
 
 
-def planck_priors_multivariate(cfg: ConfigDict) -> Any:
-    """
-    Generates a multivariate normal distribution  of the parameters with a mean and covariance, C
-
-    Args:
-        cfg (ConfigDict): the main configuration file
-
-    Returns:
-        Any: the multivariate normal distribution on the parameters.
-    """
-    return multivariate_normal(cfg.sampling.mean, cfg.sampling.ncov * cfg.sampling.cov)
-
-
-def planck_logprior_multivariate(parameters: np.ndarray, priors: Any) -> float:
-    """
-    Calculates the log-pdf using a multivariate normal prior.
-
-    Args:
-        parameters (np.ndarray): a parameter vector
-        priors (Any): the multivariate normal prior
-
-    Returns:
-        float: the log-pdf
-    """
-    logp = priors.logpdf(parameters)
-    return logp
-
-
-def planck_logprior_uniform(parameters: np.ndarray, priors: dict) -> float:
+def planck_logprior_normal(parameters: np.ndarray, priors: dict) -> float:
     """
     Calculates the log-prior, where all parameters follow a uniform distribution.
 
@@ -103,10 +75,7 @@ def planck_loglike_sampler(
     Returns:
         np.ndarray: the log-likelihood value
     """
-    if cfg.sampling.uniform_prior:
-        logprior = planck_logprior_uniform(parameters, priors)
-    else:
-        logprior = planck_logprior_multivariate(parameters, priors)
+    logprior = planck_logprior_normal(parameters, priors)
 
     if np.isfinite(logprior):
         if cfg.sampling.use_gp:
@@ -138,11 +107,7 @@ def planck_logpost_sampler(
     """
 
     loglike = planck_loglike_sampler(parameters, likelihood, cfg, priors, emulator)
-
-    if cfg.sampling.uniform_prior:
-        logprior = planck_logprior_uniform(parameters, priors)
-    else:
-        logprior = planck_logprior_multivariate(parameters, priors)
+    logprior = planck_logprior_normal(parameters, priors)
 
     logpost = loglike + logprior
     if np.isfinite(logpost):

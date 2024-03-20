@@ -18,17 +18,19 @@ CONSOLE_FORMATTER = logging.Formatter("[%(levelname)s]: %(message)s")
 DATETIME = NOW.strftime("%d-%m-%Y-%H-%M")
 
 
-def get_logger(config: ConfigDict) -> logging.Logger:
+def get_logger(config: ConfigDict, path: str) -> logging.Logger:
     """Generates a logging file for storing all information.
     Args:
         config (ConfigDict): The main configuration file
+        path (str): path where we want to store the log files
     Returns:
         logging.Logger: the logging module
     """
     # create the folder if it does not exist
-    os.makedirs(config.path.logs, exist_ok=True)
+    logspath = os.path.join(path, "logs")
+    os.makedirs(logspath, exist_ok=True)
 
-    fname = config.path.logs + config.logname + f"_{DATETIME}.log"
+    fname = os.path.join(logspath, config.logname + f"_{DATETIME}.log")
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     logger.propagate = False

@@ -22,7 +22,7 @@ LOGGER = logging.getLogger(__name__)
 
 def jla_priors_normal(cfg: ConfigDict) -> dict:
     """
-    Generate uniform priors on the cosmological parameters.
+    Generate normal priors on the cosmological parameters.
 
     Args:
         cfg (ConfigDict): the main configuration file.

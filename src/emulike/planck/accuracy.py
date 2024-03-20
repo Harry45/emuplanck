@@ -4,10 +4,7 @@ import numpy as np
 from ml_collections.config_dict import ConfigDict
 from utils.helpers import pickle_save
 
-from src.emulike.planck.distribution import (
-    planck_priors_uniform,
-    planck_priors_multivariate,
-)
+from src.emulike.planck.distribution import planck_priors_normal
 from utils.helpers import pickle_save
 from experiments.planck.plite import PlanckLitePy
 from experiments.planck.model import planck_loglike
@@ -35,13 +32,9 @@ def calculate_planck_accuracy(cfg: ConfigDict, emulator: PlanckEmu) -> np.ndarra
     path_acc = os.path.join(PATH, "accuracies")
 
     # the priors
-    if cfg.sampling.uniform_prior:
-        priors = planck_priors_uniform(cfg)
-        points = [priors[name].rvs(cfg.emu.ntest) for name in cfg.cosmo.names]
-        samples = np.column_stack(points)
-    else:
-        priors = planck_priors_multivariate(cfg)
-        samples = priors.rvs(cfg.emu.ntest)
+    priors = planck_priors_normal(cfg)
+    points = [priors[name].rvs(cfg.emu.ntest) for name in cfg.sampling.names]
+    samples = np.column_stack(points)
 
     # the likelihood
     likelihood = PlanckLitePy(
@@ -55,5 +48,12 @@ def calculate_planck_accuracy(cfg: ConfigDict, emulator: PlanckEmu) -> np.ndarra
     emu_pred = np.array(list(map(emulator.prediction, samples)))
     sim_pred = planck_loglike(likelihood, samples, cfg)
     fraction = (emu_pred - sim_pred) / sim_pred
-    pickle_save(fraction, path_acc, f"acc_{cfg.emu.nlhs}")
+
+    # ignore the bad points in the loglikelihood predictions
+    newfraction = fraction[fraction < 100.0]
+    model = "lcdm" if cfg.lambdacdm else "wcdm"
+    pickle_save(newfraction, path_acc, f"acc_{model}_{cfg.emu.nlhs}")
+    LOGGER.info(f"Emulator accuracy (MEAN) : {np.mean(newfraction)*100:.2f} %")
+    LOGGER.info(f"Emulator accuracy (STD)  : {np.std(newfraction)*100:.2f} %")
+
     return fraction

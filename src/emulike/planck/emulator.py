@@ -58,11 +58,12 @@ class PlanckEmu:
     def __init__(self, cfg: ConfigDict, inputs: np.ndarray, loglike: np.ndarray):
         self.cfg = cfg
         self.loglike = loglike
-        self.inputs = inputs
-
         self.inputs = torch.from_numpy(inputs)
-        self.ytrain = forward_transform(loglike)
-        self.outputs = torch.from_numpy(self.ytrain)
+        ytrans = forward_transform(loglike)
+        self.ymean = np.mean(ytrans)
+        self.ystd = np.std(ytrans)
+        ytrain = (ytrans - self.ymean) / self.ystd
+        self.outputs = torch.from_numpy(ytrain)
         self.gp_module = None
 
     def train_gp(self, prewhiten: bool = True) -> GaussianProcess:
@@ -78,7 +79,7 @@ class PlanckEmu:
 
         self.gp_module = GaussianProcess(self.cfg, self.inputs, self.outputs, prewhiten)
         parameters = torch.randn(self.cfg.ndim + 1)
-        print(f"Training the emulator {self.cfg.emu.nrestart} times.")
+        LOGGER.info(f"Training the emulator {self.cfg.emu.nrestart} times.")
         _ = self.gp_module.optimisation(
             parameters,
             niter=self.cfg.emu.niter,
@@ -98,6 +99,11 @@ class PlanckEmu:
             float: the predicted log-likelihood value
         """
         param_tensor = torch.from_numpy(parameters)
-        pred_gp = self.gp_module.prediction(param_tensor)
-        pred = inverse_tranform(pred_gp.item())
-        return pred
+        pred_gp = self.gp_module.prediction(param_tensor).item()
+
+        # prediction must be within limits of standard normal
+        # we consider 6 sigma limit
+        if -6.0 <= pred_gp <= 6.0:
+            pred = inverse_tranform(self.ystd * pred_gp + self.ymean)
+            return pred
+        return -1e32

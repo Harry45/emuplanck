@@ -43,20 +43,11 @@ def get_planck_fname(cfg: ConfigDict) -> str:
     Returns:
         str: the file name of the sampler
     """
-    if cfg.sampling.use_gp and cfg.sampling.uniform_prior:
-        fname = f"samples_GP_uniform_{cfg.emu.nlhs}_{cfg.sampling.fname}"
-
-    if cfg.sampling.use_gp and not cfg.sampling.uniform_prior:
-        fname = f"samples_GP_multivariate_{cfg.emu.nlhs}_{cfg.sampling.fname}"
-
-    if not cfg.sampling.use_gp and cfg.sampling.uniform_prior:
-        fname = f"samples_CAMB_uniform_{cfg.sampling.fname}"
-
-    if not cfg.sampling.use_gp and not cfg.sampling.uniform_prior:
-        fname = f"samples_CAMB_multivariate_{cfg.sampling.fname}"
-
-    if "mnu" in cfg.cosmo.names:
-        fname += "_neutrino"
+    model = "lcdm" if cfg.lambdacdm else "wcdm"
+    if cfg.sampling.use_gp:
+        fname = f"samples_{model}_GP_{cfg.emu.nlhs}_{cfg.sampling.fname}"
+    else:
+        fname = f"samples_{model}_CAMB_{cfg.sampling.fname}"
     return fname
 
 

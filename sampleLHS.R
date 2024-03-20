@@ -7,10 +7,6 @@ args <- commandArgs(trailingOnly = TRUE)
 cat('Number of LHS points is:', args[1], "\n")
 cat('Number of dimensions is:', args[2], "\n")
 
-if (args[1] < args[2]) {
-  stop("First argument should be number of LHS")
-}
-
 n = args[1]
 dimensions = args[2]
 

@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 import logging
 from typing import Tuple, Any
@@ -7,11 +8,7 @@ import emcee
 from multiprocessing import Pool
 
 # our scripts
-from src.emulike.planck.distribution import (
-    planck_logpost_sampler,
-    planck_priors_uniform,
-    planck_priors_multivariate,
-)
+from src.emulike.planck.distribution import planck_logpost_sampler, planck_priors_normal
 from utils.helpers import pickle_save, get_planck_fname
 from src.emulike.planck.training import get_training_points, train_gp
 from utils.helpers import pickle_load
@@ -20,6 +17,7 @@ from torchemu.gaussianprocess import GaussianProcess
 from experiments.planck.plite import PlanckLitePy
 
 LOGGER = logging.getLogger(__name__)
+PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
@@ -38,12 +36,10 @@ def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
     """
     emulator = None
 
-    if cfg.sampling.uniform_prior:
-        priors = planck_priors_uniform(cfg)
-        femu = f"emulator_uniform_{cfg.emu.nlhs}"
-    else:
-        priors = planck_priors_multivariate(cfg)
-        femu = f"emulator_multivariate_{cfg.emu.nlhs}"
+    priors = planck_priors_normal(cfg)
+    path_emu = os.path.join(PATH, "emulators")
+    model = "lcdm" if cfg.lambdacdm else "wcdm"
+    femu = f"emulator_{model}_{cfg.emu.nlhs}"
 
     if cfg.emu.generate_points:
         start_time = datetime.now()
@@ -58,7 +54,7 @@ def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
         LOGGER.info(f"Time: training : {cfg.emu.nlhs} training points : {time_elapsed}")
 
     if cfg.sampling.use_gp:
-        emulator = pickle_load("emulators", femu)
+        emulator = pickle_load(path_emu, femu)
 
     if cfg.emu.calc_acc:
         start_time = datetime.now()
@@ -104,9 +100,8 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
         time_elapsed = datetime.now() - start_time
         LOGGER.info(f"Time: sample the posterior : {time_elapsed}")
 
-        # get the file name of the sampler
-        fname = get_planck_fname(cfg)
-
         # save the sampler
-        pickle_save(sampler, cfg.path.samples, fname)
+        fname = get_planck_fname(cfg)
+        path = os.path.join(PATH, "samples")
+        pickle_save(sampler, path, fname)
         LOGGER.info(f"Total number of samples: {sampler.flatchain.shape}")

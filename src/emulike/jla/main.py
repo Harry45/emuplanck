@@ -5,6 +5,7 @@ Author: Arrykrishna
 """
 
 # pylint: disable=bad-continuation
+import os
 from absl import flags, app
 from ml_collections.config_flags import config_flags
 from multiprocessing import cpu_count
@@ -15,6 +16,7 @@ from utils.logger import get_logger
 
 FLAGS = flags.FLAGS
 _CONFIG = config_flags.DEFINE_config_file("config", None, "Main configuration file.")
+PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 def main(_):
@@ -23,7 +25,7 @@ def main(_):
     """
     cfg = FLAGS.config
     ncpu = cpu_count()
-    logger = get_logger(FLAGS.config)
+    logger = get_logger(FLAGS.config, PATH)
     logger.info("Running main script")
     logger.info(f"We have {ncpu} CPUs")
 

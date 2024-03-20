@@ -24,25 +24,16 @@ def planck_theory(parameters: dict, cfg: ConfigDict) -> dict:
     """
     pars = camb.CAMBparams()
 
-    if "mnu" in cfg.cosmo.names:
-        pars.set_cosmology(
-            ombh2=parameters["ombh2"],
-            omch2=parameters["omch2"],
-            mnu=parameters["mnu"],
-            omk=0,
-            tau=parameters["tau"],
-            thetastar=parameters["thetastar"],
-            neutrino_hierarchy="normal",
-        )
-    else:
-        pars.set_cosmology(
-            ombh2=parameters["ombh2"],
-            omch2=parameters["omch2"],
-            omk=0,
-            tau=parameters["tau"],
-            thetastar=parameters["thetastar"],
-        )
+    pars.set_cosmology(
+        H0=parameters["H0"],
+        ombh2=parameters["ombh2"],
+        omch2=parameters["omch2"],
+        omk=0,
+        tau=0.054,
+    )
     pars.InitPower.set_params(As=parameters["As"], ns=parameters["ns"])
+    if "w" in cfg.sampling.names:
+        pars.set_dark_energy(w=parameters["w0"], wa=0)
     pars.set_for_lmax(cfg.planck.ellmax, lens_potential_accuracy=cfg.planck.accuracy)
     results = camb.get_results(pars)
     powers = results.get_cmb_power_spectra(pars, CMB_unit="muK")
@@ -78,13 +69,14 @@ def planck_get_params(parameters: np.ndarray, cfg: ConfigDict) -> dict:
     params = {
         "ombh2": parameters[0],
         "omch2": parameters[1],
-        "thetastar": parameters[2] / 100,
-        "tau": parameters[3],
-        "As": np.exp(parameters[4]) * 1e-10,
-        "ns": parameters[5],
+        "H0": parameters[2] * 100,
+        "As": np.exp(parameters[3]) * 1e-10,
+        "ns": parameters[4],
     }
-    if "mnu" in cfg.cosmo.names:
-        params["mnu"] = parameters[6]
+    if "w" in cfg.sampling.names:
+        params["w0"] = parameters[5]
+
+    print(params)
 
     return params
 

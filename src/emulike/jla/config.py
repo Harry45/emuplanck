@@ -29,8 +29,6 @@ def get_config(experiment: str) -> ConfigDict:
     config.path = path = ConfigDict()
     path.parent = "/home/arrykrishna/Documents/Oxford/Projects/emuplanck/"
     path.data = os.path.join(path.parent, "experiments/jla/data")
-    path.logs = os.path.join(path.parent, "src/emulike/jla/logs/")
-    path.samples = os.path.join(path.parent, "src/emulike/jla/samples/")
 
     # optimisation (we keep ombh2 fixed to 0.019)
     config.opt = opt = ConfigDict()
@@ -52,9 +50,9 @@ def get_config(experiment: str) -> ConfigDict:
     emu.lr = 0.01
     emu.nrestart = 5
     emu.niter = 1000
-    emu.train_emu = True
-    emu.generate_points = True
-    emu.calc_acc = True
+    emu.train_emu = False
+    emu.generate_points = False
+    emu.calc_acc = False
     emu.ntest = 1000
 
     # cosmological parameters
@@ -63,17 +61,16 @@ def get_config(experiment: str) -> ConfigDict:
     sampling.fname = "test"
     sampling.run_sampler = True
     sampling.nsamples = 1
+    sampling.mean = np.array([0.022, 0.15, 0.7])
+    sampling.std = np.array([1e-3, 0.025, 0.05])
 
     if config.lambdacdm:
         sampling.names = ["ombh2", "omch2", "h"]
     else:
         sampling.names = ["ombh2", "omch2", "h", "w"]
-
-    config.ndim = len(sampling.names)
-    sampling.mean = np.array([0.022, 0.15, 0.7])
-    sampling.std = np.array([1e-3, 0.025, 0.05])
-
-    if "w" in config.sampling.names:
         sampling.mean = np.append(sampling.mean, -1.0)
         sampling.std = np.append(sampling.std, 0.1)
+
+    # number of dimensions
+    config.ndim = len(sampling.names)
     return config

@@ -95,9 +95,9 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
         time_elapsed = datetime.now() - start_time
         LOGGER.info(f"Time: sample the posterior : {time_elapsed}")
 
-        # get the file name of the sampler
-        fname = get_jla_fname(cfg)
-
         # save the sampler
-        pickle_save(sampler, cfg.path.samples, fname)
+        fname = get_jla_fname(cfg)
+        path = os.path.join(PATH, "samples")
+        pickle_save(sampler, path, fname)
+        pickle_save(sampler, path, fname)
         LOGGER.info(f"Total number of samples: {sampler.flatchain.shape}")
