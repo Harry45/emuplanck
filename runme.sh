@@ -4,8 +4,9 @@ source activate emuplanck
 echo $PWD
 which python
 echo $(for i in $(seq 1 50); do printf "-"; done)
-python3 -m src.emulike.planck.main --config=src/emulike/planck/config.py:planck-2018 \
+# python3 -m src.emulike.planck.main --config=src/emulike/planck/config.py:planck-2018 \
+#     --config.sampling.nsamples=10000 --config.sampling.fname=experiment_1
+python3 -m src.emulike.jla.main --config=src/emulike/jla/config.py:jla \
     --config.sampling.nsamples=10000 --config.sampling.fname=experiment_1
-
 # run script with the following
 # addqueue -m 16 -n 1x8 -s ./runme.sh
