@@ -44,19 +44,20 @@ def get_config(experiment: str) -> ConfigDict:
     emu.lr = 0.01
     emu.nrestart = 5
     emu.niter = 1000
-    emu.train_emu = True
-    emu.generate_points = True
-    emu.calc_acc = True
+    emu.train_emu = False
+    emu.generate_points = False
+    emu.calc_acc = False
     emu.ntest = 1000
 
     # sampling settings
     config.sampling = sampling = ConfigDict()
     sampling.run_sampler = True
-    sampling.use_gp = True
+    sampling.use_gp = False
     sampling.nsamples = 5
     sampling.fname = "testing"
-    sampling.mean = np.array([0.022, 0.12, 0.67, 3.05, 0.965])
-    sampling.std = np.array([2e-4, 2e-3, 1e-2, 2e-2, 1e-2])
+    sampling.mean = np.array([0.022, 0.12, 0.7, 3.05, 0.965])
+    # sampling.std = np.array([2e-4, 2e-3, 1e-2, 2e-2, 1e-2])
+    sampling.std = np.array([1e-3, 0.025, 0.05, 0.05, 0.025])
 
     if config.lambdacdm:
         sampling.names = ["ombh2", "omch2", "h", "As", "ns"]

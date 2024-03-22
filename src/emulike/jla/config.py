@@ -61,7 +61,7 @@ def get_config(experiment: str) -> ConfigDict:
     sampling.fname = "test"
     sampling.run_sampler = True
     sampling.nsamples = 1
-    sampling.mean = np.array([0.022, 0.15, 0.7])
+    sampling.mean = np.array([0.022, 0.12, 0.7])
     sampling.std = np.array([1e-3, 0.025, 0.05])
 
     if config.lambdacdm:
