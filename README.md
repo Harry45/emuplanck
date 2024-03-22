@@ -13,5 +13,5 @@ python3 -m src.emulike.planck.main --config=src/emulike/planck/config.py:planck-
 
 ### JLA
 ```
-time python3 -m src.emulike.jla.main --config=src/emulike/jla/config.py:jla --config.sampling.nsamples=1 --config.sampling.fname=experiment_1
+python3 -m src.emulike.jla.main --config=src/emulike/jla/config.py:jla --config.sampling.nsamples=1 --config.sampling.fname=experiment_1
 ```
