@@ -27,7 +27,8 @@ def get_config(experiment: str) -> ConfigDict:
 
     # paths
     config.path = path = ConfigDict()
-    path.parent = "/home/arrykrishna/Documents/Oxford/Projects/emuplanck/"
+    # path.parent = "/home/arrykrishna/Documents/Oxford/Projects/emuplanck/"
+    path.parent = "/mnt/users/phys2286/projects/emuplanck"
     path.data = os.path.join(path.parent, "experiments/jla/data")
 
     # optimisation (we keep ombh2 fixed to 0.019)
