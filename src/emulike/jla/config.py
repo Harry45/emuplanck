@@ -58,7 +58,7 @@ def get_config(experiment: str) -> ConfigDict:
 
     # cosmological parameters
     config.sampling = sampling = ConfigDict()
-    sampling.use_gp = True
+    sampling.use_gp = False
     sampling.fname = "test"
     sampling.run_sampler = True
     sampling.nsamples = 1
