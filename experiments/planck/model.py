@@ -76,7 +76,7 @@ def planck_get_params(parameters: np.ndarray, cfg: ConfigDict) -> dict:
     if "w" in cfg.sampling.names:
         params["w0"] = parameters[5]
 
-    print(params)
+    # print(params)
 
     return params
 
