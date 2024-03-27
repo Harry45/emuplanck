@@ -83,15 +83,23 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
         pos = cfg.sampling.mean + 1e-4 * np.random.normal(size=(2 * cfg.ndim, cfg.ndim))
         nwalkers = pos.shape[0]
         start_time = datetime.now()
-        with Pool() as pool:
-            sampler = emcee.EnsembleSampler(
-                nwalkers,
-                cfg.ndim,
-                jla_logpost_sampler,
-                args=(likelihood, cfg, priors, emulator),
-                pool=pool,
-            )
-            sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
+        # with Pool() as pool:
+        #     sampler = emcee.EnsembleSampler(
+        #         nwalkers,
+        #         cfg.ndim,
+        #         jla_logpost_sampler,
+        #         args=(likelihood, cfg, priors, emulator),
+        #         pool=pool,
+        #     )
+        #     sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
+        sampler = emcee.EnsembleSampler(
+            nwalkers,
+            cfg.ndim,
+            jla_logpost_sampler,
+            args=(likelihood, cfg, priors, emulator),
+        )
+        sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
+
         time_elapsed = datetime.now() - start_time
         LOGGER.info(f"Time: sample the posterior : {time_elapsed}")
 

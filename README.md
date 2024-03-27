@@ -5,13 +5,31 @@ We build an emulator for the Planck likelihood. This is based on the work done b
 
 All boolean field are already set in the config file and to run the code, we can do the following:
 
-### Planck
+### Planck (log-likelihood)
 
 ```
-python3 -m src.emulike.planck.main --config=src/emulike/planck/config.py:planck-2018 --config.sampling.nsamples=1 --config.sampling.fname=experiment_1
+python3 -m src.emulike.planck.main --config=configs/Planckconfig.py:planck-2018 --config.sampling.nsamples=1 --config.sampling.fname=experiment_1
 ```
 
-### JLA
+### JLA (log-likelihood)
+
 ```
-python3 -m src.emulike.jla.main --config=src/emulike/jla/config.py:jla --config.sampling.nsamples=1 --config.sampling.fname=experiment_1
+python3 -m src.emulike.jla.main --config=configs/JLAconfig.py:jla --config.sampling.nsamples=1 --config.sampling.fname=experiment_1
 ```
+
+### JLA (MOPED Coefficients)
+
+```
+python3 -m src.moped.jla.main --config=configs/JLAconfig.py:jla-moped --config.sampling.nsamples=1 --config.sampling.fname=experiment_1
+```
+
+### Planck (MOPED Coefficients)
+
+```
+python3 -m src.moped.planck.main --config=configs/Planckconfig.py:planck-moped --config.sampling.nsamples=1 --config.sampling.fname=experiment_1
+```
+
+### To Do
+- PCA - Planck (Power Spectra)
+- PCA - JLA (Distance Modulus)
+- Joint Analysis (with any combination - likelihood, MOPED or PCA)

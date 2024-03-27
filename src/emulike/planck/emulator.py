@@ -79,7 +79,7 @@ class PlanckEmu:
 
         self.gp_module = GaussianProcess(self.cfg, self.inputs, self.outputs, prewhiten)
         parameters = torch.randn(self.cfg.ndim + 1)
-        LOGGER.info(f"Training the emulator {self.cfg.emu.nrestart} times.")
+        LOGGER.info(f"Training likelihood emulator {self.cfg.emu.nrestart} times.")
         _ = self.gp_module.optimisation(
             parameters,
             niter=self.cfg.emu.niter,

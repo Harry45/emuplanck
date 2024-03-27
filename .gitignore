@@ -4,6 +4,8 @@
 .vscode
 src/emulike/planck/samples/
 src/emulike/jla/samples/
+src/moped/planck/samples/
+src/moped/jla/samples/
 experiments/jla/data/
 jobs/
 
