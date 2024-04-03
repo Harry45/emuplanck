@@ -63,10 +63,11 @@ def get_config(experiment: str) -> ConfigDict:
     sampling.discard = 1000
     sampling.nsamples = 5
     sampling.fname = "testing"
-    # sampling.mean = np.array([0.022, 0.12, 0.7, 3.05, 0.965])
     sampling.mean = np.array([0.022, 0.12, 0.67, 3.05, 0.965])
-    # sampling.std = np.array([2e-4, 2e-3, 1e-2, 2e-2, 1e-2])
     sampling.std = np.array([1e-3, 0.025, 0.05, 0.05, 0.025])
+
+    # sampling.mean = np.array([0.022, 0.12, 0.7, 3.05, 0.965])
+    # sampling.std = np.array([2e-4, 2e-3, 1e-2, 2e-2, 1e-2])
 
     # compression
     config.moped = moped = ConfigDict()
