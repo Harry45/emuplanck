@@ -5,7 +5,6 @@ from typing import Tuple, Any
 import numpy as np
 from ml_collections.config_dict import ConfigDict
 import emcee
-from multiprocessing import Pool
 
 # our scripts and functions
 from experiments.jla.jlalite import JLALitePy
@@ -83,15 +82,6 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
         pos = cfg.sampling.mean + 1e-4 * np.random.normal(size=(2 * cfg.ndim, cfg.ndim))
         nwalkers = pos.shape[0]
         start_time = datetime.now()
-        # with Pool() as pool:
-        #     sampler = emcee.EnsembleSampler(
-        #         nwalkers,
-        #         cfg.ndim,
-        #         jla_logpost_sampler,
-        #         args=(likelihood, cfg, priors, emulator),
-        #         pool=pool,
-        #     )
-        #     sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
         sampler = emcee.EnsembleSampler(
             nwalkers,
             cfg.ndim,

@@ -26,8 +26,8 @@ def get_config(experiment: str) -> ConfigDict:
 
     # paths
     config.path = path = ConfigDict()
-    # path.parent = "/home/arrykrishna/Documents/Oxford/Projects/emuplanck/"
-    path.parent = "/mnt/users/phys2286/projects/emuplanck"
+    path.parent = "/home/arrykrishna/Documents/Oxford/Projects/emuplanck/"
+    # path.parent = "/mnt/users/phys2286/projects/emuplanck"
     path.data = os.path.join(path.parent, "experiments/planck/data")
 
     config.planck = planck = ConfigDict()
@@ -58,16 +58,13 @@ def get_config(experiment: str) -> ConfigDict:
     # sampling settings
     config.sampling = sampling = ConfigDict()
     sampling.run_sampler = True
-    sampling.use_gp = False
+    sampling.use_gp = True
     sampling.thin = 2
     sampling.discard = 1000
     sampling.nsamples = 5
     sampling.fname = "testing"
     sampling.mean = np.array([0.022, 0.12, 0.67, 3.05, 0.965])
     sampling.std = np.array([1e-3, 0.025, 0.05, 0.05, 0.025])
-
-    # sampling.mean = np.array([0.022, 0.12, 0.7, 3.05, 0.965])
-    # sampling.std = np.array([2e-4, 2e-3, 1e-2, 2e-2, 1e-2])
 
     # compression
     config.moped = moped = ConfigDict()

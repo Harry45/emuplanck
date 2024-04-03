@@ -114,3 +114,45 @@ def process_chains(cfg: ConfigDict, fname: str, thin: int, discard: int) -> np.n
     pickle_save(mean_samples, fullpath, file + "_mean")
     pickle_save(cov_samples, fullpath, file + "_cov")
     return emcee_samples
+
+
+def emcee_chains(cfg: ConfigDict, fname: str, thin: int, discard: int) -> np.ndarray:
+    """Generate the MCMC chain for running MCEvidence.
+
+    Args:
+        cfg (ConfigDict): the main configuration file
+        fname (str): the full path to the file, for example:
+
+        fname = "src/emulike/planck/samples/samples_lcdm_GP_1500_experiment_1"
+
+        thin (int): thinning factor
+        discard (int): number of samples to discard
+
+    Returns:
+        np.ndarray: the final array to be used for running MCEvidence.
+    """
+    # the pkl file
+    path, file = os.path.split(fname)
+    fullpath = os.path.join(cfg.path.parent, path)
+    pkl_file = pickle_load(cfg.path.parent, fname)
+
+    # the MCMC samples
+    array = pkl_file.get_chain(flat=True, thin=thin, discard=discard)
+
+    # number of samples
+    nsamples = array.shape[0]
+
+    # the log-posterior
+    logp = pkl_file.get_log_prob(flat=True, thin=thin, discard=discard).reshape(
+        nsamples, 1
+    )
+
+    # the samples are unique - so we add a column of ones in the beginning
+    ones = np.ones((nsamples, 1))
+
+    # combine the important information
+    comb = np.concatenate([ones, logp, array], axis=1)
+
+    # save the array if required
+    np.savetxt(fullpath + "/" + "MCE_" + file, comb)
+    return comb
