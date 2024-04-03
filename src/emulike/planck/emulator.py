@@ -5,16 +5,35 @@ Author: Arrykrishna
 """
 
 # pylint: disable=bad-continuation
+import os
 import torch
 import logging
+from typing import Any
 import numpy as np
+from scipy.stats import multivariate_normal
 from ml_collections.config_dict import ConfigDict
 
 # our script and functions
 from torchemu.gaussianprocess import GaussianProcess
-
+from utils.helpers import pickle_load
 
 LOGGER = logging.getLogger(__name__)
+
+
+def get_mvn(cfg: ConfigDict) -> Any:
+    """Generates a multivariate normal distribution given the simulator runs.
+
+    Args:
+        cfg (ConfigDict): the main configuration file.
+
+    Returns:
+        Any: the multivariate normal distribution
+    """
+    path, file = os.path.split(cfg.emu.sim_path)
+    fullpath = os.path.join(cfg.path.parent, path)
+    mean = pickle_load(fullpath, file + "_mean")
+    cov = pickle_load(fullpath, file + "_cov")
+    return multivariate_normal(mean, cfg.emu.ncov * cov)
 
 
 def forward_transform(loglikelihood: np.ndarray) -> np.ndarray:
@@ -65,6 +84,7 @@ class PlanckEmu:
         ytrain = (ytrans - self.ymean) / self.ystd
         self.outputs = torch.from_numpy(ytrain)
         self.gp_module = None
+        self.mvn = get_mvn(cfg)
 
     def train_gp(self, prewhiten: bool = True) -> GaussianProcess:
         """
@@ -98,12 +118,17 @@ class PlanckEmu:
         Returns:
             float: the predicted log-likelihood value
         """
+        pdf = self.mvn.pdf(parameters)
         param_tensor = torch.from_numpy(parameters)
-        pred_gp = self.gp_module.prediction(param_tensor).item()
+
+        if pdf > 1e-3:
+            pred_gp = self.gp_module.prediction(param_tensor).item()
+            pred = inverse_tranform(self.ystd * pred_gp + self.ymean)
+            return pred
 
         # prediction must be within limits of standard normal
         # we consider 6 sigma limit
-        if -6.0 <= pred_gp <= 6.0:
-            pred = inverse_tranform(self.ystd * pred_gp + self.ymean)
-            return pred
+        # if -6.0 <= pred_gp <= 6.0:
+        #     pred = inverse_tranform(self.ystd * pred_gp + self.ymean)
+        #     return pred
         return -1e32

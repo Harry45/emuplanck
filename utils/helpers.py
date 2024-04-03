@@ -6,8 +6,13 @@ Author: Arrykrishna
 
 import os
 import pickle
+import pathlib
+import logging
+import numpy as np
 from typing import Any
 from ml_collections.config_dict import ConfigDict
+
+LOGGER = logging.getLogger(__name__)
 
 
 def get_jla_fname(cfg: ConfigDict) -> str:
@@ -80,3 +85,32 @@ def pickle_load(folder: str, fname: str) -> Any:
     with open(path + ".pkl", "rb") as dummy:
         file = pickle.load(dummy)
     return file
+
+
+def process_chains(cfg: ConfigDict, fname: str, thin: int, discard: int) -> np.ndarray:
+    """Process the MCMC chain (EMCEE object) such that we discard the first
+    N samples and take every i sample. We also store the mean and covariance
+    of the final chain.
+
+    Args:
+        cfg (ConfigDict): the main configuration file
+        fname (str): name of the file
+        thin (int): thinning factor
+        discard (int): number of samples to discard
+
+    Returns:
+        np.ndarray: the processed chain
+    """
+    path, file = os.path.split(fname)
+    fullpath = os.path.join(cfg.path.parent, path)
+    emcee_file = pickle_load(fullpath, file)
+    emcee_samples = emcee_file.get_chain(flat=True, thin=thin, discard=discard)
+    mean_samples = np.mean(emcee_samples, 0)
+    cov_samples = np.cov(emcee_samples.T)
+
+    LOGGER.info(f"Number of samples after processing : {emcee_samples.shape[0]}")
+
+    pickle_save(emcee_samples, fullpath, file + "_thinned")
+    pickle_save(mean_samples, fullpath, file + "_mean")
+    pickle_save(cov_samples, fullpath, file + "_cov")
+    return emcee_samples

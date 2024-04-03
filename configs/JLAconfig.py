@@ -58,11 +58,11 @@ def get_config(experiment: str) -> ConfigDict:
 
     # cosmological parameters
     config.sampling = sampling = ConfigDict()
-    sampling.use_gp = True
-    sampling.fname = "test"
+    sampling.use_gp = False
     sampling.run_sampler = True
+    sampling.fname = "test"
     sampling.nsamples = 1
-    sampling.mean = np.array([0.022, 0.12, 0.7])
+    sampling.mean = np.array([0.022, 0.12, 0.67])
     sampling.std = np.array([1e-3, 0.025, 0.05])
 
     # compression

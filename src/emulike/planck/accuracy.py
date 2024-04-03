@@ -1,11 +1,12 @@
 import os
 import logging
 import numpy as np
+from scipy.stats import multivariate_normal
 from ml_collections.config_dict import ConfigDict
 from utils.helpers import pickle_save
 
 from src.emulike.planck.distribution import planck_priors_normal
-from utils.helpers import pickle_save
+from utils.helpers import pickle_save, pickle_load
 from experiments.planck.plite import PlanckLitePy
 from experiments.planck.model import planck_loglike
 from src.emulike.planck.emulator import PlanckEmu
@@ -32,9 +33,15 @@ def calculate_planck_accuracy(cfg: ConfigDict, emulator: PlanckEmu) -> np.ndarra
     path_acc = os.path.join(PATH, "accuracies")
 
     # the priors
-    priors = planck_priors_normal(cfg)
-    points = [priors[name].rvs(cfg.emu.ntest) for name in cfg.sampling.names]
-    samples = np.column_stack(points)
+    # priors = planck_priors_normal(cfg)
+    # points = [priors[name].rvs(cfg.emu.ntest) for name in cfg.sampling.names]
+    # samples = np.column_stack(points)
+    path, file = os.path.split(cfg.emu.sim_path)
+    fullpath = os.path.join(cfg.path.parent, path)
+    mean = pickle_load(fullpath, file + "_mean")
+    cov = pickle_load(fullpath, file + "_cov")
+    mvn = multivariate_normal(mean, cfg.emu.ncov * cov)
+    samples = mvn.rvs(cfg.emu.ntest)
 
     # the likelihood
     likelihood = PlanckLitePy(

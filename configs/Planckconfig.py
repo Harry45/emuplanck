@@ -40,6 +40,11 @@ def get_config(experiment: str) -> ConfigDict:
 
     # emulator settings
     config.emu = emu = ConfigDict()
+    emu.ncov = 3
+    if config.lambdacdm:
+        emu.sim_path = "src/emulike/planck/samples/samples_lcdm_CAMB_experiment_1"
+    else:
+        emu.sim_path = "src/emulike/planck/samples/samples_wcdm_CAMB_experiment_1"
     emu.nlhs = 1500
     emu.jitter = 1e-10
     emu.lr = 0.01
@@ -53,10 +58,13 @@ def get_config(experiment: str) -> ConfigDict:
     # sampling settings
     config.sampling = sampling = ConfigDict()
     sampling.run_sampler = True
-    sampling.use_gp = False
+    sampling.use_gp = True
+    sampling.thin = 2
+    sampling.discard = 1000
     sampling.nsamples = 5
     sampling.fname = "testing"
-    sampling.mean = np.array([0.022, 0.12, 0.7, 3.05, 0.965])
+    # sampling.mean = np.array([0.022, 0.12, 0.7, 3.05, 0.965])
+    sampling.mean = np.array([0.022, 0.12, 0.67, 3.05, 0.965])
     # sampling.std = np.array([2e-4, 2e-3, 1e-2, 2e-2, 1e-2])
     sampling.std = np.array([1e-3, 0.025, 0.05, 0.05, 0.025])
 
