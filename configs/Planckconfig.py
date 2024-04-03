@@ -58,7 +58,7 @@ def get_config(experiment: str) -> ConfigDict:
     # sampling settings
     config.sampling = sampling = ConfigDict()
     sampling.run_sampler = True
-    sampling.use_gp = True
+    sampling.use_gp = False
     sampling.thin = 2
     sampling.discard = 1000
     sampling.nsamples = 5
