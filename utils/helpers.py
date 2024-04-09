@@ -56,6 +56,25 @@ def get_planck_fname(cfg: ConfigDict) -> str:
     return fname
 
 
+def get_jla_planck_fname(cfg_jla: ConfigDict, cfg_planck: ConfigDict) -> str:
+    """
+    Get the filename of the sampler.
+
+    Args:
+        cfg_jla (ConfigDict): the main configuration file for JLA
+        cfg_planck (ConfigDict): the main configuration file for Planck
+
+    Returns:
+        str: the file name of the sampler
+    """
+    model = "lcdm" if cfg_planck.lambdacdm else "wcdm"
+    if cfg_planck.sampling.use_gp and cfg_jla.sampling.use_gp:
+        fname = f"samples_{model}_emulator_{cfg_planck.sampling.fname}"
+    else:
+        fname = f"samples_{model}_simulator_{cfg_planck.sampling.fname}"
+    return fname
+
+
 def pickle_save(file: list, folder: str, fname: str) -> None:
     """Stores a list in a folder.
     Args:

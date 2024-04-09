@@ -97,5 +97,4 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
         fname = get_jla_fname(cfg)
         path = os.path.join(PATH, "samples")
         pickle_save(sampler, path, fname)
-        pickle_save(sampler, path, fname)
         LOGGER.info(f"Total number of samples: {sampler.flatchain.shape}")

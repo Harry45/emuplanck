@@ -17,6 +17,13 @@ python3 -m src.emulike.planck.main --config=configs/Planckconfig.py:planck-2018 
 python3 -m src.emulike.jla.main --config=configs/JLAconfig.py:jla --config.sampling.nsamples=1 --config.sampling.fname=experiment_1
 ```
 
+### Planck and JLA (log-likelihood)
+
+```
+python3 -m src.emulike.jointanalysis.main --configjla=configs/JLAconfig.py:jla --configplanck=configs/Planckconfig.py:planck-2018 --configplanck.sampling.nsamples=10 --configplanck.sampling.fname=experiment_1 --configplanck.logname=jointanalysis
+
+```
+
 ### JLA (MOPED Coefficients)
 
 ```
