@@ -17,22 +17,39 @@ from src.emulike.planck.sampling import get_priors_emulator
 from experiments.jla.jlalite import JLALitePy
 from experiments.planck.plite import PlanckLitePy
 from utils.helpers import get_jla_planck_fname, pickle_save
+from torchemu.gaussianprocess import GaussianProcess
 
 LOGGER = logging.getLogger(__name__)
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 def sample_joint(
-    parameters,
-    cfg_jla,
-    like_jla,
-    priors_jla,
-    emu_jla,
-    cfg_planck,
-    like_planck,
-    priors_planck,
-    emu_planck,
+    parameters: np.ndarray,
+    cfg_jla: ConfigDict,
+    like_jla: JLALitePy,
+    priors_jla: dict,
+    emu_jla: GaussianProcess,
+    cfg_planck: ConfigDict,
+    like_planck: PlanckLitePy,
+    priors_planck: dict,
+    emu_planck: GaussianProcess,
 ) -> float:
+    """Calculates the log-posterior given the two experiments. 
+
+    Args:
+        parameters (np.ndarray): an array of the parameters 
+        cfg_jla (ConfigDict): the main configuration file for JLA.
+        like_jla (JLALitePy): the likelhood module for JLA
+        priors_jla (dict): the priors for the JLA. 
+        emu_jla (GaussianProcess): the likelihood emulator for JLA. 
+        cfg_planck (ConfigDict): the main configuration for Planck. 
+        like_planck (PlanckLitePy): the likelihood module for Planck. 
+        priors_planck (dict): the priors for Planck
+        emu_planck (GaussianProcess): the likelihood emulator for Planck.
+
+    Returns:
+        float: the log-posterior value.
+    """
 
     loglike_planck = planck_loglike_sampler(
         parameters, like_planck, cfg_planck, priors_planck, emu_planck
@@ -46,7 +63,16 @@ def sample_joint(
     return loglike_planck + loglike_jla + logprior
 
 
-def sample_posterior(cfg_jla, cfg_planck):
+def sample_posterior(cfg_jla: ConfigDict, cfg_planck: ConfigDict) -> emcee.EnsembleSampler:
+    """Sample the posterior distribution using EMCEE. 
+
+    Args:
+        cfg_jla (ConfigDict): the main configuration file for JLA. 
+        cfg_planck (ConfigDict): the main configuration file for Planck. 
+
+    Returns:
+        emcee.EnsembleSampler: the EMCEE sampler.
+    """
     priors_jla, emu_jla = get_jla_priors_emulator(cfg_jla)
     like_jla = JLALitePy(cfg_jla)
 
