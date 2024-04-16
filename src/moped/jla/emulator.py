@@ -85,7 +85,7 @@ class JLAMOPEDemu:
 
         self.gp_module = GaussianProcess(self.cfg, self.inputs, self.outputs, prewhiten)
         parameters = torch.randn(self.cfg.ndim + 1)
-        LOGGER.info(f"Training likelihood emulator {self.cfg.emu.nrestart} times.")
+        LOGGER.info(f"Training MOPED emulator {self.cfg.emu.nrestart} times.")
         _ = self.gp_module.optimisation(
             parameters,
             niter=self.cfg.emu.niter,
@@ -96,13 +96,13 @@ class JLAMOPEDemu:
 
     def prediction(self, parameters: np.ndarray) -> float:
         """
-        Predict the log-likelihood value given the pre-trained emulator.
+        Predict the MOPED value given the pre-trained emulator.
 
         Args:
             parameters (np.ndarray): the test point in parameter space
 
         Returns:
-            float: the predicted log-likelihood value
+            float: the predicted MOPED value
         """
         param_tensor = torch.from_numpy(parameters)
         pred_gp = self.gp_module.prediction(param_tensor).item()

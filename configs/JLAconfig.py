@@ -27,8 +27,8 @@ def get_config(experiment: str) -> ConfigDict:
 
     # paths
     config.path = path = ConfigDict()
-    # path.parent = "/home/arrykrishna/Documents/Oxford/Projects/emuplanck/"
-    path.parent = "/mnt/users/phys2286/projects/emuplanck"
+    path.parent = "/home/arrykrishna/Documents/Oxford/Projects/emuplanck/"
+    # path.parent = "/mnt/users/phys2286/projects/emuplanck"
     path.data = os.path.join(path.parent, "experiments/jla/data")
 
     # optimisation (we keep ombh2 fixed to 0.019)
@@ -51,14 +51,14 @@ def get_config(experiment: str) -> ConfigDict:
     emu.lr = 0.01
     emu.nrestart = 5
     emu.niter = 1000
-    emu.train_emu = False
-    emu.generate_points = False
-    emu.calc_acc = False
+    emu.train_emu = True
+    emu.generate_points = True
+    emu.calc_acc = True
     emu.ntest = 1000
 
     # cosmological parameters
     config.sampling = sampling = ConfigDict()
-    sampling.use_gp = False
+    sampling.use_gp = True
     sampling.run_sampler = True
     sampling.fname = "test"
     sampling.nsamples = 1
