@@ -16,7 +16,7 @@ from typing import Any
 
 # our script and functions
 from torchemu.gaussianprocess import GaussianProcess
-
+from src.emulike.planck.emulator import get_mvn
 
 LOGGER = logging.getLogger(__name__)
 
@@ -71,6 +71,7 @@ class PlanckMOPEDemu:
         ytrain = (ytrans - self.ymean) / self.ystd
         self.outputs = torch.from_numpy(ytrain)
         self.gp_module = None
+        self.mvn = get_mvn(cfg)
 
     def train_gp(self, prewhiten: bool = True) -> GaussianProcess:
         """
@@ -85,7 +86,7 @@ class PlanckMOPEDemu:
 
         self.gp_module = GaussianProcess(self.cfg, self.inputs, self.outputs, prewhiten)
         parameters = torch.randn(self.cfg.ndim + 1)
-        LOGGER.info(f"Training likelihood emulator {self.cfg.emu.nrestart} times.")
+        LOGGER.info(f"Training MOPED emulator {self.cfg.emu.nrestart} times.")
         _ = self.gp_module.optimisation(
             parameters,
             niter=self.cfg.emu.niter,
@@ -96,20 +97,18 @@ class PlanckMOPEDemu:
 
     def prediction(self, parameters: np.ndarray) -> float:
         """
-        Predict the log-likelihood value given the pre-trained emulator.
+        Predict the MOPED value given the pre-trained emulator.
 
         Args:
             parameters (np.ndarray): the test point in parameter space
 
         Returns:
-            float: the predicted log-likelihood value
+            float: the predicted MOPED value
         """
+        pdf = self.mvn.pdf(parameters)
         param_tensor = torch.from_numpy(parameters)
-        pred_gp = self.gp_module.prediction(param_tensor).item()
-
-        # prediction must be within limits of standard normal
-        # we consider 6 sigma limit
-        if -6.0 <= pred_gp <= 6.0:
+        if pdf > 1e-3:
+            pred_gp = self.gp_module.prediction(param_tensor).item()
             pred = inverse_tranform(self.ystd * pred_gp + self.ymean)
             return pred
         return -1e32

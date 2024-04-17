@@ -26,8 +26,8 @@ def get_config(experiment: str) -> ConfigDict:
 
     # paths
     config.path = path = ConfigDict()
-    # path.parent = "/home/arrykrishna/Documents/Oxford/Projects/emuplanck/"
-    path.parent = "/mnt/users/phys2286/projects/emuplanck"
+    path.parent = "/home/arrykrishna/Documents/Oxford/Projects/emuplanck/"
+    # path.parent = "/mnt/users/phys2286/projects/emuplanck"
     path.data = os.path.join(path.parent, "experiments/planck/data")
 
     config.planck = planck = ConfigDict()
@@ -45,11 +45,11 @@ def get_config(experiment: str) -> ConfigDict:
         emu.sim_path = "src/emulike/planck/samples/samples_lcdm_CAMB_experiment_1"
     else:
         emu.sim_path = "src/emulike/planck/samples/samples_wcdm_CAMB_experiment_1"
-    emu.nlhs = 1500
+    emu.nlhs = 2000
     emu.jitter = 1e-10
     emu.lr = 0.01
     emu.nrestart = 5
-    emu.niter = 1000
+    emu.niter = 500
     emu.train_emu = False
     emu.generate_points = False
     emu.calc_acc = False
@@ -58,7 +58,7 @@ def get_config(experiment: str) -> ConfigDict:
     # sampling settings
     config.sampling = sampling = ConfigDict()
     sampling.run_sampler = True
-    sampling.use_gp = False
+    sampling.use_gp = True
     sampling.thin = 2
     sampling.discard = 1000
     sampling.nsamples = 5

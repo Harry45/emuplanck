@@ -2,13 +2,13 @@ import os
 import logging
 import numpy as np
 from ml_collections.config_dict import ConfigDict
-from utils.helpers import pickle_save
+from scipy.stats import multivariate_normal
 
 # our scripts and functions
 from src.emulike.planck.distribution import planck_priors_normal
 from src.moped.planck.functions import PLANCKmoped, planck_moped_coefficients
 from src.moped.planck.emulator import PlanckMOPEDemu
-from utils.helpers import pickle_save
+from utils.helpers import pickle_save, pickle_load
 
 
 LOGGER = logging.getLogger(__name__)
@@ -33,9 +33,12 @@ def planck_moped_accuracy(cfg: ConfigDict, emulators: list) -> np.ndarray:
     path_acc = os.path.join(PATH, "accuracies")
 
     # generate some random points from the prior
-    priors = planck_priors_normal(cfg)
-    points = [priors[name].rvs(cfg.emu.ntest) for name in cfg.sampling.names]
-    samples = np.column_stack(points)
+    path, file = os.path.split(cfg.emu.sim_path)
+    fullpath = os.path.join(cfg.path.parent, path)
+    mean = pickle_load(fullpath, file + "_mean")
+    cov = pickle_load(fullpath, file + "_cov")
+    mvn = multivariate_normal(mean, cfg.emu.ncov * cov)
+    samples = mvn.rvs(cfg.emu.ntest)
 
     # calculate the exact MOPED coefficients
     compressor = PLANCKmoped(cfg)

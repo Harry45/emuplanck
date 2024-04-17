@@ -37,8 +37,7 @@ def get_training_points(cfg: ConfigDict) -> Tuple[np.ndarray, np.ndarray]:
     """
     path = os.path.join(PATH, "trainingpoints")
     compressor = PLANCKmoped(cfg)
-    priors = planck_priors_normal(cfg)
-    cosmologies = input_points_normal(cfg, priors)
+    cosmologies = input_points_normal(cfg)
     model = "lcdm" if cfg.lambdacdm else "wcdm"
     fcosmo = f"cosmologies_{model}_{cfg.emu.nlhs}"
     fmoped = f"moped_coefficients_{model}_{cfg.emu.nlhs}"

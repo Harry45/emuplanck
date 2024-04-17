@@ -6,6 +6,7 @@ src/emulike/planck/samples/
 src/emulike/jla/samples/
 src/emulike/jointanalysis/samples/
 src/moped/planck/samples/
+src/moped/planck/emulators/
 src/moped/jla/samples/
 experiments/jla/data/
 jobs/

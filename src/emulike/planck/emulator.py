@@ -125,10 +125,4 @@ class PlanckEmu:
             pred_gp = self.gp_module.prediction(param_tensor).item()
             pred = inverse_tranform(self.ystd * pred_gp + self.ymean)
             return pred
-
-        # prediction must be within limits of standard normal
-        # we consider 6 sigma limit
-        # if -6.0 <= pred_gp <= 6.0:
-        #     pred = inverse_tranform(self.ystd * pred_gp + self.ymean)
-        #     return pred
         return -1e32

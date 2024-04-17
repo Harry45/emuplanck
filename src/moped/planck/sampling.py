@@ -102,7 +102,8 @@ def planck_loglike_moped_sampler(
             coef = planck_moped_coefficients(compressor, parameters, cfg)
 
         diff = compressor.store.ycomp - coef.reshape(-1)
-        return -0.5 * sum(diff**2)
+        chi2 = sum(diff**2)
+        return -0.5 * chi2
     return -1e32
 
 
@@ -154,17 +155,6 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
         pos = cfg.sampling.mean + 1e-4 * np.random.normal(size=(2 * cfg.ndim, cfg.ndim))
         nwalkers = pos.shape[0]
         start_time = datetime.now()
-
-        # this does not seem to work with MOPED
-        # with Pool() as pool:
-        #     sampler = emcee.EnsembleSampler(
-        #         nwalkers,
-        #         cfg.ndim,
-        #         planck_logpost_moped_sampler,
-        #         args=(compressor, cfg, priors, emulator),
-        #         pool=pool,
-        #     )
-        #     sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
 
         sampler = emcee.EnsembleSampler(
             nwalkers,
