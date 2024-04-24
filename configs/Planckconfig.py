@@ -45,14 +45,14 @@ def get_config(experiment: str) -> ConfigDict:
         emu.sim_path = "src/emulike/planck/samples/samples_lcdm_CAMB_experiment_1"
     else:
         emu.sim_path = "src/emulike/planck/samples/samples_wcdm_CAMB_experiment_1"
-    emu.nlhs = 2000
+    emu.nlhs = 2500
     emu.jitter = 1e-10
     emu.lr = 0.01
     emu.nrestart = 5
     emu.niter = 500
-    emu.train_emu = False
-    emu.generate_points = False
-    emu.calc_acc = False
+    emu.train_emu = True
+    emu.generate_points = True
+    emu.calc_acc = True
     emu.ntest = 1000
 
     # sampling settings
