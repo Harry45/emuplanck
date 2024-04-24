@@ -14,7 +14,6 @@ from ml_collections.config_dict import ConfigDict
 # our scripts
 from experiments.jla.jlalite import JLALitePy
 from experiments.jla.model import jla_loglike
-from torchemu.gaussianprocess import GaussianProcess
 
 
 LOGGER = logging.getLogger(__name__)
@@ -60,7 +59,7 @@ def jla_loglike_sampler(
     likelihood: JLALitePy,
     cfg: ConfigDict,
     priors: Any,
-    emulator: GaussianProcess = None,
+    emulator=None,
 ) -> np.ndarray:
     """
     Calculates the log-likelihood using the emulator or the simulator.
@@ -90,7 +89,7 @@ def jla_logpost_sampler(
     likelihood: JLALitePy,
     cfg: ConfigDict,
     priors: Any,
-    emulator: GaussianProcess = None,
+    emulator=None,
 ) -> float:
     """
     The log-posterior calculated either with the emulator or the simulator.

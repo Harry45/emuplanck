@@ -8,7 +8,6 @@ import emcee
 
 # our scripts and functions
 from experiments.jla.jlalite import JLALitePy
-from torchemu.gaussianprocess import GaussianProcess
 from utils.helpers import pickle_load, pickle_save, get_jla_fname
 from src.emulike.jla.training import get_training_points, train_gp
 from src.emulike.jla.accuracy import calculate_jla_accuracy
@@ -19,7 +18,7 @@ LOGGER = logging.getLogger(__name__)
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 
-def get_jla_priors_emulator(cfg: ConfigDict) -> Tuple[dict, GaussianProcess]:
+def get_jla_priors_emulator(cfg: ConfigDict):
     """
     Generate the priors and get the emulator. See config file for further details. We can
     1) generate the training points

@@ -10,6 +10,7 @@ import numpy as np
 from absl import flags, app
 from ml_collections.config_flags import config_flags
 from multiprocessing import cpu_count
+import warnings
 
 # our script
 from src.emulike.jointanalysis.sampling import sample_joint, sample_posterior
@@ -21,6 +22,7 @@ config_flags.DEFINE_config_file(
     "configplanck", None, "Main configuration file for Planck."
 )
 PATH = os.path.dirname(os.path.realpath(__file__))
+warnings.filterwarnings("ignore")
 
 
 def main(_):

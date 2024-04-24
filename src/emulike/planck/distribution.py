@@ -15,7 +15,6 @@ from scipy.stats import multivariate_normal
 
 # our scripts
 from experiments.planck.model import planck_loglike
-from torchemu.gaussianprocess import GaussianProcess
 from experiments.planck.plite import PlanckLitePy
 
 LOGGER = logging.getLogger(__name__)
@@ -61,7 +60,7 @@ def planck_loglike_sampler(
     likelihood: PlanckLitePy,
     cfg: ConfigDict,
     priors: Any,
-    emulator: GaussianProcess = None,
+    emulator=None,
 ) -> np.ndarray:
     """
     Calculates the log-likelihood using the emulator or the simulator.
@@ -91,7 +90,7 @@ def planck_logpost_sampler(
     likelihood: PlanckLitePy,
     cfg: ConfigDict,
     priors: Any,
-    emulator: GaussianProcess = None,
+    emulator=None,
 ) -> float:
     """
     the log-posterior calculated either with the emulator or the simulator.

@@ -14,7 +14,8 @@ from scipy.stats import multivariate_normal
 from ml_collections.config_dict import ConfigDict
 
 # our script and functions
-from torchemu.gaussianprocess import GaussianProcess
+from gptemulator.gpemu import GPModel
+from src.emulike.ytrans import yTransformLogLike
 from utils.helpers import pickle_load
 
 LOGGER = logging.getLogger(__name__)
@@ -36,34 +37,6 @@ def get_mvn(cfg: ConfigDict) -> Any:
     return multivariate_normal(mean, cfg.emu.ncov * cov)
 
 
-def forward_transform(loglikelihood: np.ndarray) -> np.ndarray:
-    """
-    Transform the log-likelihood values such that we are emulating the log(chi2).
-
-    Args:
-        loglikelihood (np.ndarray): the log-likelihood values
-
-    Returns:
-        np.ndarray: the transformed value of the log-likelihood
-    """
-    ytrain = np.log(-2 * loglikelihood)
-    return ytrain
-
-
-def inverse_tranform(prediction: np.ndarray) -> np.ndarray:
-    """
-    Apply the inverse transformation on the predicted values.
-
-    Args:
-        prediction (np.ndarray): the prediction from the emulator.
-
-    Returns:
-        np.ndarray: the predicted log-likelihood value
-    """
-    pred_trans = -0.5 * np.exp(prediction)
-    return pred_trans
-
-
 class PlanckEmu:
     """
     Emulator for the Planck likelihood.
@@ -76,37 +49,19 @@ class PlanckEmu:
 
     def __init__(self, cfg: ConfigDict, inputs: np.ndarray, loglike: np.ndarray):
         self.cfg = cfg
-        self.loglike = loglike
-        self.inputs = torch.from_numpy(inputs)
-        ytrans = forward_transform(loglike)
-        self.ymean = np.mean(ytrans)
-        self.ystd = np.std(ytrans)
-        ytrain = (ytrans - self.ymean) / self.ystd
-        self.outputs = torch.from_numpy(ytrain)
-        self.gp_module = None
+        ytransform = yTransformLogLike(loglike)
         self.mvn = get_mvn(cfg)
+        self.gp_module = GPModel(inputs, ytransform)
 
-    def train_gp(self, prewhiten: bool = True) -> GaussianProcess:
-        """
-        Train the Gaussian Process emulator.
-
-        Args:
-            prewhiten (bool, optional): Option to pre-whiten the input parameters. Defaults to True.
-
-        Returns:
-            GaussianProcess: the trained emulator
-        """
-
-        self.gp_module = GaussianProcess(self.cfg, self.inputs, self.outputs, prewhiten)
-        parameters = torch.randn(self.cfg.ndim + 1)
-        LOGGER.info(f"Training likelihood emulator {self.cfg.emu.nrestart} times.")
-        _ = self.gp_module.optimisation(
-            parameters,
-            niter=self.cfg.emu.niter,
-            lrate=self.cfg.emu.lr,
-            nrestart=self.cfg.emu.nrestart,
+    def train_gp(self):
+        LOGGER.info(f"Training the likelihood emulator")
+        loss = self.gp_module.training(
+            self.cfg.emu.niter,
+            self.cfg.emu.lr,
+            self.cfg.emu.jitter,
+            self.cfg.emu.verbose,
         )
-        return self.gp_module
+        return loss
 
     def prediction(self, parameters: np.ndarray) -> float:
         """
@@ -122,7 +77,9 @@ class PlanckEmu:
         param_tensor = torch.from_numpy(parameters)
 
         if pdf > 1e-3:
-            pred_gp = self.gp_module.prediction(param_tensor).item()
-            pred = inverse_tranform(self.ystd * pred_gp + self.ymean)
-            return pred
+            if self.cfg.emu.sample:
+                pred_gp = self.gp_module.sample(param_tensor).item()
+            else:
+                pred_gp = self.gp_module.prediction(param_tensor).item()
+            return pred_gp
         return -1e32

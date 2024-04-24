@@ -138,6 +138,6 @@ def train_gp(cfg: ConfigDict) -> PlanckEmu:
     loglikelihoods = pickle_load(path_tp, flike)
 
     emulator = PlanckEmu(cfg, cosmologies, loglikelihoods)
-    _ = emulator.train_gp(prewhiten=True)
+    loss = emulator.train_gp()
     pickle_save(emulator, path_emu, femu)
     return emulator

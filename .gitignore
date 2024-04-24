@@ -2,12 +2,24 @@
 .ipynb_checkpoints
 .bashrc
 .vscode
-src/emulike/planck/samples/
-src/emulike/jla/samples/
-src/emulike/jointanalysis/samples/
-src/moped/planck/samples/
-src/moped/planck/emulators/
-src/moped/jla/samples/
+
+# the samples for the likelihood emulator
+src/emulike/planck/samples/*.pkl
+src/emulike/planck/samples/MCE*
+src/emulike/jla/samples/*.pkl
+src/emulike/jla/samples/MCE*
+src/emulike/jointanalysis/samples/*.pkl
+src/emulike/jointanalysis/samples/MCE*
+
+# the emulators of the log-likelihood
+src/emulike/planck/emulators/*.pkl
+src/emulike/jla/emulators/*.pkl
+
+src/moped/planck/emulators/*.pkl
+src/moped/jla/emulators/*.pkl
+src/moped/planck/samples/*.pkl
+src/moped/jla/samples/*.pkl
+
 experiments/jla/data/
 jobs/
 

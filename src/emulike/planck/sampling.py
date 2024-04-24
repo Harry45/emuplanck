@@ -12,14 +12,13 @@ from utils.helpers import pickle_save, get_planck_fname
 from src.emulike.planck.training import get_training_points, train_gp
 from utils.helpers import pickle_load
 from src.emulike.planck.accuracy import calculate_planck_accuracy
-from torchemu.gaussianprocess import GaussianProcess
 from experiments.planck.plite import PlanckLitePy
 
 LOGGER = logging.getLogger(__name__)
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 
-def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
+def get_priors_emulator(cfg: ConfigDict):
     """
     Generate the priors and get the emulator. See config file for further details. We can
     1) generate the training points
@@ -31,7 +30,7 @@ def get_priors_emulator(cfg: ConfigDict) -> Tuple[Any, GaussianProcess]:
         cfg (ConfigDict): the main configuration file
 
     Returns:
-        Tuple[Any, GaussianProcess]: the priors (uniform or multivariate) and the emulator
+        the priors (uniform or multivariate) and the emulator
     """
     emulator = None
 

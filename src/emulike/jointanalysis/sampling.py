@@ -17,7 +17,6 @@ from src.emulike.planck.sampling import get_priors_emulator
 from experiments.jla.jlalite import JLALitePy
 from experiments.planck.plite import PlanckLitePy
 from utils.helpers import get_jla_planck_fname, pickle_save
-from torchemu.gaussianprocess import GaussianProcess
 
 LOGGER = logging.getLogger(__name__)
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -28,24 +27,24 @@ def sample_joint(
     cfg_jla: ConfigDict,
     like_jla: JLALitePy,
     priors_jla: dict,
-    emu_jla: GaussianProcess,
+    emu_jla,
     cfg_planck: ConfigDict,
     like_planck: PlanckLitePy,
     priors_planck: dict,
-    emu_planck: GaussianProcess,
+    emu_planck,
 ) -> float:
-    """Calculates the log-posterior given the two experiments. 
+    """Calculates the log-posterior given the two experiments.
 
     Args:
-        parameters (np.ndarray): an array of the parameters 
+        parameters (np.ndarray): an array of the parameters
         cfg_jla (ConfigDict): the main configuration file for JLA.
         like_jla (JLALitePy): the likelhood module for JLA
-        priors_jla (dict): the priors for the JLA. 
-        emu_jla (GaussianProcess): the likelihood emulator for JLA. 
-        cfg_planck (ConfigDict): the main configuration for Planck. 
-        like_planck (PlanckLitePy): the likelihood module for Planck. 
+        priors_jla (dict): the priors for the JLA.
+        emu_jla: the likelihood emulator for JLA.
+        cfg_planck (ConfigDict): the main configuration for Planck.
+        like_planck (PlanckLitePy): the likelihood module for Planck.
         priors_planck (dict): the priors for Planck
-        emu_planck (GaussianProcess): the likelihood emulator for Planck.
+        emu_planck: the likelihood emulator for Planck.
 
     Returns:
         float: the log-posterior value.
@@ -63,12 +62,14 @@ def sample_joint(
     return loglike_planck + loglike_jla + logprior
 
 
-def sample_posterior(cfg_jla: ConfigDict, cfg_planck: ConfigDict) -> emcee.EnsembleSampler:
-    """Sample the posterior distribution using EMCEE. 
+def sample_posterior(
+    cfg_jla: ConfigDict, cfg_planck: ConfigDict
+) -> emcee.EnsembleSampler:
+    """Sample the posterior distribution using EMCEE.
 
     Args:
-        cfg_jla (ConfigDict): the main configuration file for JLA. 
-        cfg_planck (ConfigDict): the main configuration file for Planck. 
+        cfg_jla (ConfigDict): the main configuration file for JLA.
+        cfg_planck (ConfigDict): the main configuration file for Planck.
 
     Returns:
         emcee.EnsembleSampler: the EMCEE sampler.
@@ -116,4 +117,4 @@ def sample_posterior(cfg_jla: ConfigDict, cfg_planck: ConfigDict) -> emcee.Ensem
         pickle_save(sampler, path, fname)
         LOGGER.info(f"Total number of samples: {sampler.flatchain.shape}")
 
-    return sampler
+        return sampler

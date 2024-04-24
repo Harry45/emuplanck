@@ -99,6 +99,6 @@ def train_gp(cfg: ConfigDict) -> JLAemu:
 
     # train and store the emulators
     emulator = JLAemu(cfg, cosmologies, loglikelihoods)
-    _ = emulator.train_gp(prewhiten=True)
+    loss = emulator.train_gp()
     pickle_save(emulator, path_emu, femu)
     return emulator
