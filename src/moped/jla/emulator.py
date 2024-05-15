@@ -15,38 +15,25 @@ from ml_collections.config_dict import ConfigDict
 from typing import Any
 
 # our script and functions
-from torchemu.gaussianprocess import GaussianProcess
-
+from src.moped.ytrans import yTransformMoped
+from gptemulator.gpemu import GPModel
 
 LOGGER = logging.getLogger(__name__)
 
 
-def forward_transform(value: np.ndarray) -> np.ndarray:
-    """
-    Implement a forward transformation if we want to.
-
-    Args:
-        value (np.ndarray): the log-likelihood value or MOPED coefficient
-
-    Returns:
-        np.ndarray: the transformed value of the log-likelihood
-    """
-    ytrain = value
-    return ytrain
-
-
-def inverse_tranform(prediction: np.ndarray) -> np.ndarray:
-    """
-    Apply the inverse transformation on the predicted values.
-
-    Args:
-        prediction (np.ndarray): the prediction from the emulator.
-
-    Returns:
-        np.ndarray: the predicted log-likelihood value
-    """
-    pred_trans = prediction
-    return pred_trans
+def moped_gp_models(
+    cosmologies, moped_coeffs, ntrain=200, lr=0.1, noise=1e-4, verbose=True
+):
+    ndim = moped_coeffs.shape[1]
+    models = {}
+    loss = {}
+    for i in range(ndim):
+        ytransform = yTransformMoped(moped_coeffs[:, i])
+        model = GPModel(cosmologies, ytransform)
+        print(f"Training Model {i+1}")
+        loss[i] = model.training(ntrain=ntrain, lr=lr, noise=noise, verbose=verbose)
+        models[i] = model
+    return models, loss
 
 
 class JLAMOPEDemu:
@@ -59,57 +46,36 @@ class JLAMOPEDemu:
         loglike (np.ndarray): the log-likelihood values.
     """
 
-    def __init__(self, cfg: ConfigDict, inputs: np.ndarray, loglike: np.ndarray):
+    def __init__(self, cfg: ConfigDict, inputs: np.ndarray, coeffs: np.ndarray):
         self.cfg = cfg
-        self.loglike = loglike
         self.inputs = inputs
+        ytransform = yTransformMoped(coeffs)
+        self.gp_module = GPModel(inputs, ytransform)
 
-        self.inputs = torch.from_numpy(inputs)
-        ytrans = forward_transform(loglike)
-        self.ymean = np.mean(ytrans)
-        self.ystd = np.std(ytrans)
-        ytrain = (ytrans - self.ymean) / self.ystd
-        self.outputs = torch.from_numpy(ytrain)
-        self.gp_module = None
+    def train_gp(self):
 
-    def train_gp(self, prewhiten: bool = True) -> GaussianProcess:
-        """
-        Train the Gaussian Process emulator.
-
-        Args:
-            prewhiten (bool, optional): Option to pre-whiten the input parameters. Defaults to True.
-
-        Returns:
-            GaussianProcess: the trained emulator
-        """
-
-        self.gp_module = GaussianProcess(self.cfg, self.inputs, self.outputs, prewhiten)
-        parameters = torch.randn(self.cfg.ndim + 1)
-        LOGGER.info(f"Training MOPED emulator {self.cfg.emu.nrestart} times.")
-        _ = self.gp_module.optimisation(
-            parameters,
-            niter=self.cfg.emu.niter,
-            lrate=self.cfg.emu.lr,
-            nrestart=self.cfg.emu.nrestart,
+        loss = self.gp_module.training(
+            self.cfg.emu.niter,
+            self.cfg.emu.lr,
+            self.cfg.emu.jitter,
+            self.cfg.emu.verbose,
         )
-        return self.gp_module
+        return loss
 
     def prediction(self, parameters: np.ndarray) -> float:
         """
-        Predict the MOPED value given the pre-trained emulator.
+        Predict the log-likelihood value given the pre-trained emulator.
 
         Args:
             parameters (np.ndarray): the test point in parameter space
 
         Returns:
-            float: the predicted MOPED value
+            float: the predicted log-likelihood value
         """
         param_tensor = torch.from_numpy(parameters)
-        pred_gp = self.gp_module.prediction(param_tensor).item()
 
-        # prediction must be within limits of standard normal
-        # we consider 6 sigma limit
-        if -6.0 <= pred_gp <= 6.0:
-            pred = inverse_tranform(self.ystd * pred_gp + self.ymean)
-            return pred
-        return -1e32
+        if self.cfg.emu.sample:
+            pred_gp = self.gp_module.sample(param_tensor).item()
+        else:
+            pred_gp = self.gp_module.prediction(param_tensor).item()
+        return pred_gp

@@ -5,10 +5,8 @@ from typing import Tuple, Any
 import numpy as np
 from ml_collections.config_dict import ConfigDict
 import emcee
-from multiprocessing import Pool
 
 # our scripts and functions
-from torchemu.gaussianprocess import GaussianProcess
 from src.moped.planck.training import get_training_points, train_gp
 from src.moped.planck.accuracy import planck_moped_accuracy
 from src.emulike.planck.distribution import planck_priors_normal, planck_logprior_normal
@@ -22,7 +20,7 @@ LOGGER = logging.getLogger(__name__)
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 
-def get_planck_priors_emulator(cfg: ConfigDict) -> Tuple[dict, GaussianProcess]:
+def get_planck_priors_emulator(cfg: ConfigDict):
     """
     Generate the priors and get the emulator. See config file for further details. We can
     1) generate the training points
@@ -34,7 +32,7 @@ def get_planck_priors_emulator(cfg: ConfigDict) -> Tuple[dict, GaussianProcess]:
         cfg (ConfigDict): the main configuration file
 
     Returns:
-        Tuple[dict, GaussianProcess]: the priors and the emulator
+        the priors and the emulator
     """
     emulators = None
     priors = planck_priors_normal(cfg)

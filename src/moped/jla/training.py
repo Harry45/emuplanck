@@ -78,9 +78,10 @@ def train_gp(cfg: ConfigDict) -> list:
     # train and store the emulators
     emulators = {}
     for i in range(cfg.ndim):
+        LOGGER.info(f"Training MOPED emulator {i+1}")
         femu = f"emulator_{i}_{model}_{cfg.emu.nlhs}"
         emulator = JLAMOPEDemu(cfg, cosmologies, coefficients[:, i])
-        _ = emulator.train_gp(prewhiten=True)
+        loss = emulator.train_gp()
         pickle_save(emulator, path_emu, femu)
         emulators[i] = emulator
     return emulators

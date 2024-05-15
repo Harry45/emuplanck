@@ -15,38 +15,11 @@ from ml_collections.config_dict import ConfigDict
 from typing import Any
 
 # our script and functions
-from torchemu.gaussianprocess import GaussianProcess
+from gptemulator.gpemu import GPModel
+from src.moped.ytrans import yTransformMoped
 from src.emulike.planck.emulator import get_mvn
 
 LOGGER = logging.getLogger(__name__)
-
-
-def forward_transform(value: np.ndarray) -> np.ndarray:
-    """
-    Implement a forward transformation if we want to.
-
-    Args:
-        value (np.ndarray): the log-likelihood value or MOPED coefficient
-
-    Returns:
-        np.ndarray: the transformed value of the log-likelihood
-    """
-    ytrain = value
-    return ytrain
-
-
-def inverse_tranform(prediction: np.ndarray) -> np.ndarray:
-    """
-    Apply the inverse transformation on the predicted values.
-
-    Args:
-        prediction (np.ndarray): the prediction from the emulator.
-
-    Returns:
-        np.ndarray: the predicted log-likelihood value
-    """
-    pred_trans = prediction
-    return pred_trans
 
 
 class PlanckMOPEDemu:
@@ -61,19 +34,11 @@ class PlanckMOPEDemu:
 
     def __init__(self, cfg: ConfigDict, inputs: np.ndarray, loglike: np.ndarray):
         self.cfg = cfg
-        self.loglike = loglike
-        self.inputs = inputs
-
-        self.inputs = torch.from_numpy(inputs)
-        ytrans = forward_transform(loglike)
-        self.ymean = np.mean(ytrans)
-        self.ystd = np.std(ytrans)
-        ytrain = (ytrans - self.ymean) / self.ystd
-        self.outputs = torch.from_numpy(ytrain)
-        self.gp_module = None
+        ytransform = yTransformMoped(loglike)
+        self.gp_module = GPModel(inputs, ytransform)
         self.mvn = get_mvn(cfg)
 
-    def train_gp(self, prewhiten: bool = True) -> GaussianProcess:
+    def train_gp(self):
         """
         Train the Gaussian Process emulator.
 
@@ -83,17 +48,13 @@ class PlanckMOPEDemu:
         Returns:
             GaussianProcess: the trained emulator
         """
-
-        self.gp_module = GaussianProcess(self.cfg, self.inputs, self.outputs, prewhiten)
-        parameters = torch.randn(self.cfg.ndim + 1)
-        LOGGER.info(f"Training MOPED emulator {self.cfg.emu.nrestart} times.")
-        _ = self.gp_module.optimisation(
-            parameters,
-            niter=self.cfg.emu.niter,
-            lrate=self.cfg.emu.lr,
-            nrestart=self.cfg.emu.nrestart,
+        loss = self.gp_module.training(
+            self.cfg.emu.niter,
+            self.cfg.emu.lr,
+            self.cfg.emu.jitter,
+            self.cfg.emu.verbose,
         )
-        return self.gp_module
+        return loss
 
     def prediction(self, parameters: np.ndarray) -> float:
         """
@@ -107,8 +68,11 @@ class PlanckMOPEDemu:
         """
         pdf = self.mvn.pdf(parameters)
         param_tensor = torch.from_numpy(parameters)
+
         if pdf > 1e-3:
-            pred_gp = self.gp_module.prediction(param_tensor).item()
-            pred = inverse_tranform(self.ystd * pred_gp + self.ymean)
-            return pred
+            if self.cfg.emu.sample:
+                pred_gp = self.gp_module.sample(param_tensor).item()
+            else:
+                pred_gp = self.gp_module.prediction(param_tensor).item()
+            return pred_gp
         return -1e32

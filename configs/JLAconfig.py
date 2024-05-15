@@ -53,9 +53,9 @@ def get_config(experiment: str) -> ConfigDict:
     emu.verbose = True
     emu.sample = False
 
-    emu.train_emu = False
+    emu.train_emu = True
     emu.generate_points = False
-    emu.calc_acc = False
+    emu.calc_acc = True
     emu.ntest = 1000
 
     # cosmological parameters

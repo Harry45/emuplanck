@@ -5,10 +5,8 @@ from typing import Tuple, Any
 import numpy as np
 from ml_collections.config_dict import ConfigDict
 import emcee
-from multiprocessing import Pool
 
 # our scripts and functions
-from torchemu.gaussianprocess import GaussianProcess
 from src.emulike.jla.distribution import jla_priors_normal, jla_logprior_normal
 from src.moped.jla.training import get_training_points, train_gp
 from src.moped.jla.accuracy import jla_moped_accuracy
@@ -21,7 +19,7 @@ LOGGER = logging.getLogger(__name__)
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 
-def get_jla_priors_emulator(cfg: ConfigDict) -> Tuple[dict, GaussianProcess]:
+def get_jla_priors_emulator(cfg: ConfigDict):
     """
     Generate the priors and get the emulator. See config file for further details. We can
     1) generate the training points
@@ -33,7 +31,7 @@ def get_jla_priors_emulator(cfg: ConfigDict) -> Tuple[dict, GaussianProcess]:
         cfg (ConfigDict): the main configuration file
 
     Returns:
-        Tuple[dict, GaussianProcess]: the priors and the emulator
+        the priors and the emulator
     """
     emulators = None
     priors = jla_priors_normal(cfg)
@@ -150,15 +148,13 @@ def sample_posterior(cfg: ConfigDict) -> emcee.ensemble.EnsembleSampler:
         pos = cfg.sampling.mean + 1e-4 * np.random.normal(size=(2 * cfg.ndim, cfg.ndim))
         nwalkers = pos.shape[0]
         start_time = datetime.now()
-        with Pool() as pool:
-            sampler = emcee.EnsembleSampler(
-                nwalkers,
-                cfg.ndim,
-                jla_logpost_moped_sampler,
-                args=(compressor, cfg, priors, emulator),
-                pool=pool,
-            )
-            sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
+        sampler = emcee.EnsembleSampler(
+            nwalkers,
+            cfg.ndim,
+            jla_logpost_moped_sampler,
+            args=(compressor, cfg, priors, emulator),
+        )
+        sampler.run_mcmc(pos, cfg.sampling.nsamples, progress=True)
         time_elapsed = datetime.now() - start_time
         LOGGER.info(f"Time: sample the posterior : {time_elapsed}")
 
